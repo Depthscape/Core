@@ -6,9 +6,8 @@
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.pixelbyte.core.user;
+package net.depthscape.core.user;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -2,16 +2,19 @@
  * FakeTeam
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 8/31/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.pixelbyte.core.utils.nametag.models;
+package net.depthscape.core.utils.nametag.models;
 
 import lombok.Data;
-import net.pixelbyte.core.utils.nametag.NametagManager;
+import lombok.Getter;
+import net.depthscape.core.utils.VersionChecker;
+import net.depthscape.core.utils.nametag.NametagManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a Scoreboard Team. It is used
@@ -21,8 +24,13 @@ import java.util.ArrayList;
 @Data
 public class FakeTeam {
 
-    private static final String UNIQUE_ID = NametagManager.generateUUID();
+    @Getter private static final List<String> createdTeamsNames = new ArrayList<>();
 
+    // Because some networks use NametagEdit on multiple servers, we may have clashes
+    // with the same Team names. The UNIQUE_ID ensures there will be no clashing.
+    private static final String UNIQUE_ID = NametagManager.generateUUID();
+    // This represents the number of FakeTeams that have been created.
+    // It is used to generate a unique Team name.
     private static int ID = 0;
     private final ArrayList<String> members = new ArrayList<>();
     private String name;
@@ -31,13 +39,25 @@ public class FakeTeam {
     private boolean visible = true;
 
     public FakeTeam(String prefix, String suffix, int sortPriority, boolean playerTag) {
-        this.name = UNIQUE_ID + "_" + getNameFromInput(sortPriority) + ++ID + (playerTag ? "+P" : "");
+        String generatedName = UNIQUE_ID + "_" + getNameFromInput(sortPriority) + ++ID + (playerTag ? "+P" : "");
+        while(createdTeamsNames.contains(generatedName)){
+            generatedName = NametagManager.generateUUID() + "_" + getNameFromInput(sortPriority) + ++ID + (playerTag ? "+P" : "");
+        }
+        this.name = generatedName;
 
-        this.name = this.name.length() > 256 ? this.name.substring(0, 256) : this.name;
+        switch (VersionChecker.getBukkitVersion()) {
+            case v1_13_R1: case v1_14_R1: case v1_14_R2: case v1_15_R1: case v1_16_R1:
+            case v1_16_R2: case v1_16_R3: case v1_17_R1: case v1_18_R1: case v1_19_R1:
+            case v1_19_R2: case v1_19_R3: case v1_20_R1:
+                this.name = this.name.length() > 256 ? this.name.substring(0, 256) : this.name;
+            default:
+                this.name = this.name.length() > 16 ? this.name.substring(0, 16) : this.name;
+        }
 
         this.prefix = prefix;
         this.suffix = suffix;
 
+        this.createdTeamsNames.add(this.name);
     }
 
     public void addMember(String player) {
@@ -63,7 +83,11 @@ public class FakeTeam {
         if (input < 0) return "Z";
         char letter = (char) ((input / 5) + 65);
         int repeat = input % 5 + 1;
-        return String.valueOf(letter).repeat(repeat);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < repeat; i++) {
+            builder.append(letter);
+        }
+        return builder.toString();
     }
 
 }

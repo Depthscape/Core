@@ -1,0 +1,8 @@
+block1:
+  Item:
+    Display_Name: '&6&lBlock 1'
+    Material: PAPER
+    Custom_Model_Data: 1
+  Block:
+    Note: 1
+    Instrument: BANJO

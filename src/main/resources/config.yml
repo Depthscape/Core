@@ -1,0 +1,9 @@
+Whitelist:
+  Enabled: true
+  Block_Message: '&c&lYou are not whitelisted on this server!'
+  Whitelisted_Ranks:
+    - 'Admin'
+
+Tablist:
+  Header: '&e&lDepth&6&lScape\n'
+  Footer: '\n&d&lBuy ranks at &e&lstore.depthscape.net'

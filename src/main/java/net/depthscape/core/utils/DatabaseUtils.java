@@ -2,16 +2,17 @@
  * DatabaseUtils
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 8/31/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.pixelbyte.core.utils;
+package net.depthscape.core.utils;
 
 import lombok.Getter;
-import net.pixelbyte.core.model.Callback;
-import net.pixelbyte.core.settings.Settings;
-import org.mineacademy.fo.Common;
+import net.depthscape.core.CorePlugin;
+import net.depthscape.core.model.Callback;
+import net.depthscape.core.model.SQLCallback;
+import org.bukkit.Bukkit;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,12 +26,12 @@ public class DatabaseUtils {
 
     public static void connect(boolean async) {
         if (isConnected()) {
-            Common.log("&cAlready connected to the database!");
+            Bukkit.getLogger().info("Already connected to the database!");
             return;
         }
 
         if (async) {
-            Common.runAsync(DatabaseUtils::setConnection);
+            Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), DatabaseUtils::setConnection);
         } else {
             setConnection();
         }
@@ -39,13 +40,12 @@ public class DatabaseUtils {
 
     public static void connect(String host, int port, String database, String username, String password) {
         if (isConnected()) {
-            //Common.log("&cAlready connected to the database!");
-            System.out.println("Already connected to the database!");
+            Bukkit.getLogger().info("Already connected to the database!");
             return;
         }
 
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true", username, password);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -55,25 +55,25 @@ public class DatabaseUtils {
 
     public static void disconnect() {
         if (!isConnected()) {
-            Common.log("&cAlready disconnected from the database!");
+            Bukkit.getLogger().info("Already disconnected from the database!");
             return;
         }
 
         try {
             connection.close();
-            Common.log("&aSuccessfully disconnected from the database!");
+            Bukkit.getLogger().info("Successfully disconnected from the database!");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void executeQuery(String query, Callback<ResultSet> callback) {
+    public static void executeQuery(String query, SQLCallback callback) {
         if (!isConnected()) {
-            Common.log("&cYou are not connected to the database!");
+            Bukkit.getLogger().info("You are not connected to the database!");
             return;
         }
 
-        Common.runAsync(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
             try {
                 callback.call(connection.createStatement().executeQuery(query));
             } catch (Exception e) {
@@ -83,9 +83,9 @@ public class DatabaseUtils {
 
     }
 
-    public static void executeQuerySync(String query, Callback<ResultSet> callback) {
+    public static void executeQuerySync(String query, SQLCallback callback) {
         if (!isConnected()) {
-            Common.log("&cYou are not connected to the database!");
+            Bukkit.getLogger().info("You are not connected to the database!");
             return;
         }
 
@@ -99,7 +99,7 @@ public class DatabaseUtils {
 
     public static void executeUpdateSync(String query) {
         if (!isConnected()) {
-            Common.log("&cYou are not connected to the database!");
+            Bukkit.getLogger().info("You are not connected to the database!");
             return;
         }
 
@@ -112,11 +112,11 @@ public class DatabaseUtils {
 
     public static void executeUpdate(String query) {
         if (!isConnected()) {
-            Common.log("&cYou are not connected to the database!");
+            Bukkit.getLogger().info("You are not connected to the database!");
             return;
         }
 
-        Common.runAsync(() -> {
+        Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
             try {
                 connection.createStatement().executeUpdate(query);
             } catch (Exception e) {
@@ -127,12 +127,25 @@ public class DatabaseUtils {
 
     private static void setConnection() {
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://" + Settings.Database.HOST + ":" + Settings.Database.PORT + "/" + Settings.Database.DATABASE + "?autoReconnect=true",
-                    Settings.Database.USERNAME,
-                    Settings.Database.PASSWORD);
-            Common.log("&aSuccessfully connected to the database!");
+
+            String host = CorePlugin.getInstance().getDatabaseConfig().getHost();
+            int port = CorePlugin.getInstance().getDatabaseConfig().getPort();
+            String database = CorePlugin.getInstance().getDatabaseConfig().getDatabase();
+            String username = CorePlugin.getInstance().getDatabaseConfig().getUsername();
+            String password = CorePlugin.getInstance().getDatabaseConfig().getPassword();
+
+            Bukkit.getLogger().info("Host: " + host);
+            Bukkit.getLogger().info("Port: " + port);
+            Bukkit.getLogger().info("Database: " + database);
+            Bukkit.getLogger().info("Username: " + username);
+            Bukkit.getLogger().info("Password: " + password);
+
+            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true", username, password);
+
+            Bukkit.getLogger().info("&aSuccessfully connected to the database!");
         } catch (Exception e) {
-            Common.error(e, "Failed to connect to the database!");
+            Bukkit.getLogger().info("Failed to connect to the database!");
+            e.printStackTrace();
         }
     }
 
@@ -141,7 +154,8 @@ public class DatabaseUtils {
             try {
                 return !connection.isClosed();
             } catch (final Exception e) {
-                Common.error(e, "Failed to check if the connection is closed");
+                Bukkit.getLogger().info("Failed to check if connection is closed!");
+                e.printStackTrace();
             }
         }
         return false;

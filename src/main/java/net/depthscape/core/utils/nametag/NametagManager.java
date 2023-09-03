@@ -2,28 +2,27 @@
  * NametagManager
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 8/31/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.pixelbyte.core.utils.nametag;
+package net.depthscape.core.utils.nametag;
 
 import lombok.AllArgsConstructor;
-import net.pixelbyte.core.utils.nametag.models.FakeTeam;
-import net.pixelbyte.core.utils.nametag.packets.PacketWrapper;
+import net.depthscape.core.utils.nametag.models.FakeTeam;
+import net.depthscape.core.utils.nametag.packets.PacketWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.debug.Debugger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @AllArgsConstructor
-@SuppressWarnings("unused")
 public class NametagManager {
 
-    private final HashMap<String, FakeTeam> TEAMS = new HashMap<>();
-    private final HashMap<String, FakeTeam> CACHED_FAKE_TEAMS = new HashMap<>();
+    private final Map<String, FakeTeam> TEAMS = new ConcurrentHashMap<>();
+    private final Map<String, FakeTeam> CACHED_FAKE_TEAMS = new ConcurrentHashMap<>();
 
     /**
      * Gets the current team given a prefix and suffix
@@ -31,13 +30,7 @@ public class NametagManager {
      * team is created.
      */
     private FakeTeam getFakeTeam(String prefix, String suffix, boolean visible) {
-        for (FakeTeam fakeTeam : TEAMS.values()) {
-            if (fakeTeam.isSimilar(prefix, suffix, visible)) {
-                return fakeTeam;
-            }
-        }
-
-        return null;
+        return TEAMS.values().stream().filter(fakeTeam -> fakeTeam.isSimilar(prefix, suffix, visible)).findFirst().orElse(null);
     }
 
     /**
@@ -48,7 +41,7 @@ public class NametagManager {
         FakeTeam previous = getFakeTeam(player);
 
         if (previous != null && previous.isSimilar(prefix, suffix, visible)) {
-            Debugger.debug("nametag", player + " already belongs to a similar team (" + previous.getName() + ")");
+//            plugin.debug(player + " already belongs to a similar team (" + previous.getName() + ")");
             return;
         }
 
@@ -57,14 +50,14 @@ public class NametagManager {
         FakeTeam joining = getFakeTeam(prefix, suffix, visible);
         if (joining != null) {
             joining.addMember(player);
-            Debugger.debug("nametag", "Using existing team for " + player);
+//            plugin.debug("Using existing team for " + player);
         } else {
             joining = new FakeTeam(prefix, suffix, sortPriority, playerTag);
             joining.setVisible(visible);
             joining.addMember(player);
             TEAMS.put(joining.getName(), joining);
             addTeamPackets(joining);
-            Debugger.debug("nametag", "Created FakeTeam " + joining.getName() + ". Size: " + TEAMS.size());
+//            plugin.debug("Created FakeTeam " + joining.getName() + ". Size: " + TEAMS.size());
         }
 
         Player adding = Bukkit.getPlayerExact(player);
@@ -77,8 +70,7 @@ public class NametagManager {
             cache(offlinePlayer.getName(), joining);
         }
 
-        Debugger.debug("nametag", player + " has been added to team " + joining.getName());
-        Debugger.debug("nametag", "prefix of the player is " + joining.getPrefix());
+//        plugin.debug(player + " has been added to team " + joining.getName());
     }
 
     public FakeTeam reset(String player) {
@@ -96,11 +88,11 @@ public class NametagManager {
                 delete = removePlayerFromTeamPackets(fakeTeam, toRemoveOffline.getName());
             }
 
-            Debugger.debug("nametag", player + " was removed from " + fakeTeam.getName());
+//            plugin.debug(player + " was removed from " + fakeTeam.getName());
             if (delete) {
                 removeTeamPackets(fakeTeam);
                 TEAMS.remove(fakeTeam.getName());
-                Debugger.debug("nametag", "FakeTeam " + fakeTeam.getName() + " has been deleted. Size: " + TEAMS.size());
+//                plugin.debug("FakeTeam " + fakeTeam.getName() + " has been deleted. Size: " + TEAMS.size());
             }
         }
 
@@ -125,7 +117,6 @@ public class NametagManager {
     // ==============================================================
     // Below are public methods to modify certain data
     // ==============================================================
-
     public void setNametag(String player, String prefix, int sortPriority) {
         setNametag(player, prefix, null, sortPriority);
     }
@@ -156,7 +147,7 @@ public class NametagManager {
         }
     }
 
-    public void reset() {
+    void reset() {
         for (FakeTeam fakeTeam : TEAMS.values()) {
             removePlayerFromTeamPackets(fakeTeam, fakeTeam.getMembers());
             removeTeamPackets(fakeTeam);
@@ -191,11 +182,6 @@ public class NametagManager {
     }
 
     public static String generateUUID() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            builder.append(chars.charAt((int) (Math.random() * chars.length())));
-        }
-        return builder.toString();
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

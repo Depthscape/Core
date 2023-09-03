@@ -2,11 +2,10 @@
  * PacketAccessor
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 9/2/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
-
-package net.pixelbyte.core.utils.nametag.packets;
+package net.depthscape.core.utils.nametag.packets;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -15,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 class PacketAccessor {
 
@@ -56,24 +56,15 @@ class PacketAccessor {
             Class<?> typeCraftPlayer = Class.forName("org.bukkit.craftbukkit." + VERSION + ".entity.CraftPlayer");
             getHandle = typeCraftPlayer.getMethod("getHandle");
 
-            if (!isParamsVersion()) {
-                packetClass = Class.forName("net.minecraft.server." + VERSION + ".PacketPlayOutScoreboardTeam");
-                Class<?> typeNMSPlayer = Class.forName("net.minecraft.server." + VERSION + ".EntityPlayer");
-                Class<?> typePlayerConnection = Class.forName("net.minecraft.server." + VERSION + ".PlayerConnection");
-                playerConnection = typeNMSPlayer.getField("playerConnection");
-                sendPacket = typePlayerConnection.getMethod("sendPacket", Class.forName("net.minecraft.server." + VERSION + ".Packet"));
-            } else {
-                // 1.17+
-                packetClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam");
-                packetParamsClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam$b");
-                Class<?> typeNMSPlayer = Class.forName("net.minecraft.server.level.EntityPlayer");
-                Class<?> typePlayerConnection = Class.forName("net.minecraft.server.network.PlayerConnection");
-                playerConnection = typeNMSPlayer.getField("b");
-                Class<?>[] sendPacketParameters = new Class[]{Class.forName("net.minecraft.network.protocol.Packet")};
-                sendPacket = Arrays.stream(typePlayerConnection.getMethods())
-                        .filter(method -> Arrays.equals(method.getParameterTypes(), sendPacketParameters))
-                        .findFirst().orElseThrow(NoSuchMethodException::new);
-            }
+            packetClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam");
+            packetParamsClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam$b");
+            Class<?> typeNMSPlayer = Class.forName("net.minecraft.server.level.EntityPlayer");
+            Class<?> typePlayerConnection = Class.forName("net.minecraft.server.network.PlayerConnection");
+            playerConnection = typeNMSPlayer.getField("c");
+            Class<?>[] sendPacketParameters = new Class[]{Class.forName("net.minecraft.network.protocol.Packet")};
+            sendPacket = Arrays.stream(typePlayerConnection.getMethods())
+                    .filter(method -> Arrays.equals(method.getParameterTypes(), sendPacketParameters))
+                    .findFirst().orElseThrow(NoSuchMethodException::new);
 
             PacketData currentVersion = null;
             for (PacketData packetData : PacketData.values()) {
@@ -83,45 +74,22 @@ class PacketAccessor {
             }
 
             if (currentVersion != null) {
-                if (!isParamsVersion()) {
-                    PREFIX = getNMS(currentVersion.getPrefix());
-                    SUFFIX = getNMS(currentVersion.getSuffix());
-                    MEMBERS = getNMS(currentVersion.getMembers());
-                    TEAM_NAME = getNMS(currentVersion.getTeamName());
-                    PARAM_INT = getNMS(currentVersion.getParamInt());
-                    PACK_OPTION = getNMS(currentVersion.getPackOption());
-                    DISPLAY_NAME = getNMS(currentVersion.getDisplayName());
+                PARAM_INT = getNMS(currentVersion.getParamInt());
+                TEAM_NAME = getNMS(currentVersion.getTeamName());
+                MEMBERS = getNMS(currentVersion.getMembers());
+                PARAMS = getNMS(currentVersion.getParams());
 
-                    if (isPushVersion()) {
-                        PUSH = getNMS(currentVersion.getPush());
-                    }
-
-                    if (isVisibilityVersion()) {
-                        VISIBILITY = getNMS(currentVersion.getVisibility());
-                    }
-                } else {
-                    // 1.17+
-                    PARAM_INT = getNMS(currentVersion.getParamInt());
-                    TEAM_NAME = getNMS(currentVersion.getTeamName());
-                    MEMBERS = getNMS(currentVersion.getMembers());
-                    PARAMS = getNMS(currentVersion.getParams());
-
-                    PREFIX = getParamNMS(currentVersion.getPrefix());
-                    SUFFIX = getParamNMS(currentVersion.getSuffix());
-                    PACK_OPTION = getParamNMS(currentVersion.getPackOption());
-                    DISPLAY_NAME = getParamNMS(currentVersion.getDisplayName());
-                    TEAM_COLOR = getParamNMS(currentVersion.getColor());
-                    PUSH = getParamNMS(currentVersion.getPush());
-                    VISIBILITY = getParamNMS(currentVersion.getVisibility());
-                }
+                PREFIX = getParamNMS(currentVersion.getPrefix());
+                SUFFIX = getParamNMS(currentVersion.getSuffix());
+                PACK_OPTION = getParamNMS(currentVersion.getPackOption());
+                DISPLAY_NAME = getParamNMS(currentVersion.getDisplayName());
+                TEAM_COLOR = getParamNMS(currentVersion.getColor());
+                PUSH = getParamNMS(currentVersion.getPush());
+                VISIBILITY = getParamNMS(currentVersion.getVisibility());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static boolean isParamsVersion() {
-        return MINOR_VERSION >= 17;
     }
 
     private static boolean isPushVersion() {
@@ -147,11 +115,8 @@ class PacketAccessor {
 
     static Object createPacket() {
         try {
-            if (!isParamsVersion()) {
-                return packetClass.newInstance();
-            } else {
-                return ALLOCATE_INSTANCE.invoke(UNSAFE, packetClass);
-            }
+            return ALLOCATE_INSTANCE.invoke(UNSAFE, packetClass);
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -161,11 +126,8 @@ class PacketAccessor {
     static Object createPacketParams() {
 
         try {
-            if (!isParamsVersion()) {
-                return null;
-            } else {
-                return ALLOCATE_INSTANCE.invoke(UNSAFE, packetParamsClass);
-            }
+            return ALLOCATE_INSTANCE.invoke(UNSAFE, packetParamsClass);
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -187,4 +149,5 @@ class PacketAccessor {
             e.printStackTrace();
         }
     }
+
 }

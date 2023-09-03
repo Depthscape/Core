@@ -1,0 +1,8 @@
+Stool_Red:
+  Item:
+    Display_Name: '&c&lRed Stool'
+    Material: PAPER
+    Custom_Model_Data: 1
+  Placeable:
+    Material: STICK
+    Custom_Model_Data: 1

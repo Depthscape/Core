@@ -2,11 +2,11 @@
  * PacketData
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 8/31/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
+package net.depthscape.core.utils.nametag.packets;
 
-package net.pixelbyte.core.utils.nametag.packets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,7 +26,8 @@ enum PacketData {
     v1_16("h", "c", "d", "a", "i", "j", "b", "g", "f", "e", "NA"),
     v1_17("j", "b", "c", "i", "h", "g", "a", "f", "e", "d", "k"),
     v1_18("j", "b", "c", "i", "h", "g", "a", "f", "e", "d", "k"),
-    v1_19("j", "b", "c", "i", "h", "g", "a", "f", "e", "d", "k");
+    v1_19("j", "b", "c", "i", "h", "g", "a", "f", "e", "d", "k"),
+    v1_20("j", "b", "c", "i", "h", "g", "a", "f", "e", "d", "k");
 
     private final String members;
     private final String prefix;

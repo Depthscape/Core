@@ -1,3 +1,11 @@
+/*
+ * UserCache
+ * Core
+ *
+ * Created by leobaehre on 8/31/2023
+ * Copyright © 2023 Leo Baehre. All rights reserved.
+ */
+
 package net.depthscape.core.user;
 
 import com.google.common.cache.Cache;
@@ -10,57 +18,32 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class UserManager {
+public class UserCache {
     private static final Cache<UUID, User> userCache = CacheBuilder.newBuilder().build();
 
-    /**
-     * Create the user object from the player
-     * Usually you use it on player join
-     * @param player input player
-     * @param callback output callback of the user
-     */
-    public static void validateUser(Player player, Callback<User> callback, boolean sync) {
-        User user = userCache.getIfPresent(player.getUniqueId());
+    public static void checkOrCreateUser(UUID uuid, Callback<User> callback) {
+        User user = userCache.getIfPresent(uuid);
 
-        if (sync) {
-
-            if (user == null) {
-                User u = registerNewUserSync(player.getUniqueId());
-                u.setPlayer(player);
-                try {
-                    callback.call(u);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                User u = refreshUserSync(user);
-                u.setPlayer(player);
-                u.setName(player.getName());
-                updatePlayerInfoSync(u);
-                try {
-                    callback.call(u);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
+        if (user == null) {
+            registerNewUser(uuid, u -> {
+                userCache.put(uuid, u);
+                callback.call(u);
+            });
         } else {
-            if (user == null) {
-                registerNewUser(player.getUniqueId(), u -> {
-                    u.setPlayer(player);
-                    callback.call(u);
-                });
-            } else {
-                refreshUser(user, u -> {
-                    u.setPlayer(player);
-                    u.setName(player.getName());
-                    updatePlayerInfo(u);
-                    callback.call(u);
-                });
-            }
+            callback.call(user);
         }
+    }
 
+    public static User checkOrCreateUserSync(UUID uuid) {
+        User user = userCache.getIfPresent(uuid);
 
+        if (user == null) {
+            User u = registerNewUserSync(uuid);
+            userCache.put(uuid, u);
+            return u;
+        } else {
+            return user;
+        }
     }
 
     /**
@@ -103,7 +86,7 @@ public class UserManager {
                     // set user values
                     //user.setName(resultSet.getString("name"));
                     user.setRank(RankManager.getRank(resultSet.getString("rank")));
-                   // user.setCoins(resultSet.getInt("coins"));
+                    user.setCoins(resultSet.getInt("coins"));
                 } else {
                     // create new user in database
                     saveNewUser(user);
@@ -115,7 +98,7 @@ public class UserManager {
         });
     }
 
-    private static User getUserFromDatabaseSync(UUID uniqueId) {
+    public static User getUserFromDatabaseSync(UUID uniqueId) {
         User user = new User(uniqueId);
         // check if user exists in database
         DatabaseUtils.executeQuerySync("SELECT * FROM players WHERE uuid='" + uniqueId.toString() + "'", resultSet -> {
@@ -124,7 +107,7 @@ public class UserManager {
                     // set user values
                     //user.setName(resultSet.getString("name"));
                     user.setRank(RankManager.getRank(resultSet.getString("rank")));
-                    //user.setCoins(resultSet.getInt("coins"));
+                    user.setCoins(resultSet.getInt("coins"));
                 } else {
                     // create new user in database
                     saveNewUser(user);
@@ -137,7 +120,7 @@ public class UserManager {
         return user;
     }
 
-    private static void getOfflineUserFromDatabase(UUID uniqueId, Callback<OfflineUser> userCallback) {
+    public static void getOfflineUserFromDatabase(UUID uniqueId, Callback<OfflineUser> userCallback) {
         OfflineUser user = new OfflineUser(uniqueId);
         // check if user exists in database
         DatabaseUtils.executeQuery("SELECT * FROM players WHERE uuid='" + uniqueId.toString() + "';", resultSet -> {
@@ -168,7 +151,7 @@ public class UserManager {
         });
     }
 
-    private static void getUserUUID(String name, Callback<UUID> uuidCallback) {
+    public static void getUserUUID(String name, Callback<UUID> uuidCallback) {
         DatabaseUtils.executeQuery("SELECT * FROM players WHERE name='" + name + "';", resultSet -> {
             try {
                 if (resultSet.next()) {
@@ -185,18 +168,17 @@ public class UserManager {
     }
 
 
-    private static void saveNewUser(User user) {
-        DatabaseUtils.executeUpdate("INSERT INTO players (id, uuid, name, rank, coins, vanished, friends) VALUES (default, '" + user.getUniqueId() + "', '"+ user.getName() + "', '" + user.getRank().getName() + "', 0, 0, '')");
+    public static void saveNewUser(User user) {
+        DatabaseUtils.executeUpdate("INSERT INTO players (id, uuid, name, rank, coins, vanished) VALUES (default, '" + user.getUniqueId() + "', '"+ user.getName() + "', '" + user.getRank().getName() + "', 0, 0)");
     }
 
-    private static void refreshUser(User user, Callback<User> callback) {
+    public static void refreshUser(User user, Callback<User> callback) {
         DatabaseUtils.executeQuery("SELECT * FROM players WHERE uuid='" + user.getUniqueId().toString() + "'", resultSet -> {
             try {
                 if (resultSet.next()) {
                     // set user values
                     user.setRank(RankManager.getRank(resultSet.getString("rank")));
-                    //user.setCoins(resultSet.getInt("coins"));
-                    //user.setVanished(resultSet.getBoolean("vanished"));
+                    user.setCoins(resultSet.getInt("coins"));
                     updatePlayerInfo(user);
                     callback.call(user);
                 }
@@ -206,14 +188,14 @@ public class UserManager {
         });
     }
 
-    private static User refreshUserSync(User user) {
+    public static User refreshUserSync(User user) {
         DatabaseUtils.executeQuerySync("SELECT * FROM players WHERE uuid='" + user.getUniqueId().toString() + "'", resultSet -> {
             try {
                 if (resultSet.next()) {
                     // set user values
                     user.setId(resultSet.getInt("id"));
                     user.setRank(RankManager.getRank(resultSet.getString("rank")));
-                    //user.setCoins(resultSet.getInt("coins"));
+                    user.setCoins(resultSet.getInt("coins"));
                     updatePlayerInfo(user);
                 }
             } catch (Exception e) {

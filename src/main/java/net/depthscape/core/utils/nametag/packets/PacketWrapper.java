@@ -2,24 +2,21 @@
  * PacketWrapper
  * Core
  *
- * Created by leobaehre on 7/4/2023
+ * Created by leobaehre on 9/2/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.pixelbyte.core.utils.nametag.packets;
+package net.depthscape.core.utils.nametag.packets;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-@SuppressWarnings({"rawtypes", "unchecked "})
 public class PacketWrapper {
 
     public String error;
@@ -28,16 +25,15 @@ public class PacketWrapper {
 
     private static Method CraftChatMessage;
     private static Class<? extends Enum> typeEnumChatFormat;
+    private static Method getByHexValue;
     private static Enum RESET_COLOR;
 
     static {
         try {
-            if (!PacketAccessor.isParamsVersion()) {
-                typeEnumChatFormat = (Class<? extends Enum>) Class.forName("net.minecraft.server." + PacketAccessor.VERSION + ".EnumChatFormat");
-            } else {
-                // 1.17+
-                typeEnumChatFormat = (Class<? extends Enum>) Class.forName("net.minecraft.EnumChatFormat");
-            }
+            typeEnumChatFormat = (Class<? extends Enum>) Class.forName("net.minecraft.EnumChatFormat");
+            // get methode from EnumChatFormat called getByHexValue(int i)
+            getByHexValue = typeEnumChatFormat.getMethod("getByHexValue", int.class);
+
             Class<?> typeCraftChatMessage = Class.forName("org.bukkit.craftbukkit." + PacketAccessor.VERSION + ".util.CraftChatMessage");
             CraftChatMessage = typeCraftChatMessage.getMethod("fromString", String.class);
             RESET_COLOR = Enum.valueOf(typeEnumChatFormat, "RESET");
@@ -56,6 +52,7 @@ public class PacketWrapper {
 
     @SuppressWarnings("unchecked")
     public PacketWrapper(String name, String prefix, String suffix, int param, Collection<?> players, boolean visible) {
+        Bukkit.getLogger().info("Name: " + name);
         setupDefaults(name, param);
         if (param == 0 || param == 2) {
             try {
@@ -63,43 +60,34 @@ public class PacketWrapper {
                 String colorCode = null;
                 Enum<?> colorEnum = null;
 
+                Bukkit.getLogger().info("Color: " + color);
                 if (!color.isEmpty()) {
+                    Bukkit.getLogger().info("Color after: " + color);
                     colorCode = color.substring(color.length() - 1);
                     String chatColor = ChatColor.getByChar(colorCode).name();
 
-                    if (chatColor.equalsIgnoreCase("MAGIC")) chatColor = "OBFUSCATED";
+                    if (chatColor.equalsIgnoreCase("MAGIC"))
+                        chatColor = "OBFUSCATED";
 
-                    colorEnum = Enum.valueOf(typeEnumChatFormat, chatColor);
+                    // get color from hex integer 16458759
+                    colorEnum = (Enum<?>) getByHexValue.invoke(colorEnum, 16755200);
+//                    colorEnum = (Enum<?>) getByHexValue.invoke(colorEnum, 16458759);
+                    Bukkit.getLogger().info("ColorEnum: " + colorEnum);
                 }
 
-                if (colorCode != null) suffix = ChatColor.getByChar(colorCode) + suffix;
+                if (colorCode != null)
+                    suffix = ChatColor.getByChar(colorCode) + suffix;
 
-                if (!PacketAccessor.isParamsVersion()) {
-                    PacketAccessor.TEAM_COLOR.set(packet, colorEnum == null ? RESET_COLOR : colorEnum);
-                    PacketAccessor.DISPLAY_NAME.set(packet, Array.get(CraftChatMessage.invoke(null, name), 0));
-                    PacketAccessor.PREFIX.set(packet, Array.get(CraftChatMessage.invoke(null, prefix), 0));
-                    PacketAccessor.SUFFIX.set(packet, Array.get(CraftChatMessage.invoke(null, suffix), 0));
-                } else {
-                    // 1.17+
-                    PacketAccessor.TEAM_COLOR.set(packetParams, colorEnum == null ? RESET_COLOR : colorEnum);
-                    PacketAccessor.DISPLAY_NAME.set(packetParams, Array.get(CraftChatMessage.invoke(null, name), 0));
-                    PacketAccessor.PREFIX.set(packetParams, Array.get(CraftChatMessage.invoke(null, prefix), 0));
-                    PacketAccessor.SUFFIX.set(packetParams, Array.get(CraftChatMessage.invoke(null, suffix), 0));
-                }
+                PacketAccessor.TEAM_COLOR.set(packetParams, colorEnum == null ? RESET_COLOR : colorEnum);
+                PacketAccessor.DISPLAY_NAME.set(packetParams, Array.get(CraftChatMessage.invoke(null, name), 0));
+                PacketAccessor.PREFIX.set(packetParams, Array.get(CraftChatMessage.invoke(null, prefix), 0));
+                PacketAccessor.SUFFIX.set(packetParams, Array.get(CraftChatMessage.invoke(null, suffix), 0));
 
-                if (!PacketAccessor.isParamsVersion()) {
-                    PacketAccessor.PACK_OPTION.set(packet, 1);
 
-                    if (PacketAccessor.VISIBILITY != null) {
-                        PacketAccessor.VISIBILITY.set(packet, visible ? "always" : "never");
-                    }
-                } else {
-                    // 1.17+
-                    PacketAccessor.PACK_OPTION.set(packetParams, 1);
+                PacketAccessor.PACK_OPTION.set(packetParams, 1);
 
-                    if (PacketAccessor.VISIBILITY != null) {
-                        PacketAccessor.VISIBILITY.set(packetParams, visible ? "always" : "never");
-                    }
+                if (PacketAccessor.VISIBILITY != null) {
+                    PacketAccessor.VISIBILITY.set(packetParams, visible ? "always" : "never");
                 }
 
                 if (param == 0) {
@@ -126,21 +114,12 @@ public class PacketWrapper {
             PacketAccessor.TEAM_NAME.set(packet, name);
             PacketAccessor.PARAM_INT.set(packet, param);
 
-            if (PacketAccessor.isParamsVersion()) {
-                // 1.17+ These null values are not allowed, this initializes them.
-                PacketAccessor.MEMBERS.set(packet, new ArrayList<>());
-                PacketAccessor.PUSH.set(packetParams, "");
-                PacketAccessor.VISIBILITY.set(packetParams, "");
-                PacketAccessor.TEAM_COLOR.set(packetParams, RESET_COLOR);
-            }
-            if (PacketAccessor.PUSH != null) {
-                if (!PacketAccessor.isParamsVersion()) {
-                    PacketAccessor.PUSH.set(packet, "never");
-                } else {
-                    // 1.17+
-                    PacketAccessor.PUSH.set(packetParams, "never");
-                }
-            }
+            // 1.17+ These null values are not allowed, this initializes them.
+            PacketAccessor.MEMBERS.set(packet, new ArrayList<>());
+            PacketAccessor.PUSH.set(packetParams, "");
+            PacketAccessor.VISIBILITY.set(packetParams, "");
+            PacketAccessor.TEAM_COLOR.set(packetParams, RESET_COLOR);
+
         } catch (Exception e) {
             error = e.getMessage();
         }
@@ -148,10 +127,7 @@ public class PacketWrapper {
 
     private void constructPacket() {
         try {
-            if (PacketAccessor.isParamsVersion()) {
-                // 1.17+
-                PacketAccessor.PARAMS.set(packet, Optional.ofNullable(packetParams));
-            }
+            PacketAccessor.PARAMS.set(packet, Optional.ofNullable(packetParams));
         } catch (Exception e) {
             error = e.getMessage();
         }
@@ -159,12 +135,22 @@ public class PacketWrapper {
 
     public void send() {
         constructPacket();
-        PacketAccessor.sendPacket(Bukkit.getOnlinePlayers(), packet);
+        PacketAccessor.sendPacket(getOnline(), packet);
     }
 
     public void send(Player player) {
         constructPacket();
         PacketAccessor.sendPacket(player, packet);
+    }
+
+    private List<Player> getOnline() {
+        List<Player> list = new ArrayList<>();
+
+        for (World world : Bukkit.getWorlds()) {
+            list.addAll(world.getPlayers());
+        }
+
+        return Collections.unmodifiableList(list);
     }
 
 }
