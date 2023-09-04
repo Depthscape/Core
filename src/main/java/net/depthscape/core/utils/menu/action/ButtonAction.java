@@ -9,6 +9,7 @@
 package net.depthscape.core.utils.menu.action;
 
 import net.depthscape.core.user.User;
+import net.depthscape.core.utils.menu.Menu;
 
 public abstract class ButtonAction {
 

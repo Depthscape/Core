@@ -9,15 +9,15 @@
 package net.depthscape.core.command;
 
 import net.depthscape.core.user.User;
-import net.depthscape.core.utils.menu.Menu;
-import net.depthscape.core.utils.menu.MenuButton;
-import net.depthscape.core.utils.menu.MenuItem;
+import net.depthscape.core.utils.menu.*;
 import net.depthscape.core.utils.menu.action.actions.GiveItemAction;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class InventoryTestCommand extends BaseCommand {
     public InventoryTestCommand() {
@@ -26,10 +26,19 @@ public class InventoryTestCommand extends BaseCommand {
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
-        Menu menu = new Menu("Test", 3);
-        menu.addItem(new MenuItem(new ItemStack(Material.GRASS), 0));
-        menu.addItem(new MenuButton(new ItemStack(Material.DIAMOND), 1, List.of(new GiveItemAction(new ItemStack(Material.DIAMOND)))));
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            items.add(new ItemStack(Material.values()[new Random().nextInt(Material.values().length)]));
+        }
+        PagedMenu<ItemStack> menu = new PagedMenu<>(items) {
+            @Override
+            public ItemStack toItemStack(ItemStack item) {
+                return item;
+            }
+        };
+
         user.openMenu(menu);
+
     }
 
     @Override

@@ -2,7 +2,7 @@
  * MenuListener
  * Core
  *
- * Created by leobaehre on 9/3/2023
+ * Created by leobaehre on 9/4/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
@@ -15,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.InventoryView;
 
 public class MenuListener implements Listener {
@@ -43,6 +44,18 @@ public class MenuListener implements Listener {
             User user = User.getUser(event.getPlayer() instanceof Player ? (Player) event.getPlayer(): null);
             if (user != null) {
                 user.setOpenMenu(null);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onMenuOpen(InventoryOpenEvent event) {
+        Menu menu = checkOpenMenu(event.getPlayer(), event.getView());
+        if (menu != null) {
+            User user = User.getUser(event.getPlayer() instanceof Player ? (Player) event.getPlayer(): null);
+            if (user != null) {
+                Player player = user.getPlayer();
+                player.getOpenInventory().setTitle(menu.getTitle());
             }
         }
     }

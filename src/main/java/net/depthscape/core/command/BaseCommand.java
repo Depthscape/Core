@@ -2,7 +2,7 @@
  * BaseCommand
  * Core
  *
- * Created by leobaehre on 8/31/2023
+ * Created by leobaehre on 9/4/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 package net.depthscape.core.command;
@@ -37,7 +37,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             User user = User.getUser(player);
             if (minimumRank != null) {
                 if (user.getRank().getWeight() > minimumRank.getWeight()) {
-                    user.sendMessage("&cYou do not have permission to use this command.");
+                    user.sendMessage("千 &#FB2407 The command you seek is lost in the server's pixelated dimension.");
                     return true;
                 }
             }

@@ -2,7 +2,7 @@
  * Colors
  * Core
  *
- * Created by leobaehre on 9/1/2023
+ * Created by leobaehre on 9/4/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
@@ -21,8 +21,8 @@ public class Colors {
   public static String getColored(String msg) {
     if (msg == null)
       return ""; 
-    if (Pattern.compile("\\{#[0-9A-Fa-f]{6}}").matcher(msg).find()) {
-      Matcher m = Pattern.compile("\\{#[0-9A-Fa-f]{6}}").matcher(msg);
+    if (Pattern.compile("&#[0-9A-Fa-f]{6}").matcher(msg).find()) {
+      Matcher m = Pattern.compile("&#[0-9A-Fa-f]{6}").matcher(msg);
       while(m.find()) {
         String s = m.group();
         String sNew = "§x" + Arrays.stream(s.split("")).map((s2) -> "§" + s2)
