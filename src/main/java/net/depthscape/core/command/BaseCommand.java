@@ -2,7 +2,7 @@
  * BaseCommand
  * Core
  *
- * Created by leobaehre on 9/4/2023
+ * Created by leobaehre on 9/6/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 package net.depthscape.core.command;
@@ -12,6 +12,7 @@ import net.depthscape.core.rank.Rank;
 import net.depthscape.core.user.User;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
@@ -25,7 +26,6 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         this.label = label;
         if (minimumRank != null) {
             this.minimumRank = Rank.getRank(minimumRank);
-            register();
             return;
         }
         this.minimumRank = null;
@@ -63,8 +63,8 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     protected abstract void onCommand(Player player, User user, String[] args);
     protected abstract List<String> onTabComplete(Player player, User user, String[] args);
 
-    public void register() {
-        PluginCommand command = CorePlugin.getInstance().getCommand(label);
+    public void register(JavaPlugin plugin) {
+        PluginCommand command = plugin.getCommand(label);
         command.setExecutor(this);
         command.setTabCompleter(this);
     }

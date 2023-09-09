@@ -2,7 +2,7 @@
  * CorePlugin
  * Core
  *
- * Created by leobaehre on 9/3/2023
+ * Created by leobaehre on 9/6/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
@@ -68,6 +68,6 @@ public final class CorePlugin extends JavaPlugin {
     }
 
     private void registerCommand(BaseCommand command) {
-        command.register();
+        command.register(this);
     }
 }
