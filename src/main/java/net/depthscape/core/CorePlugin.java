@@ -12,6 +12,7 @@ import lombok.Getter;
 import net.depthscape.core.command.BaseCommand;
 import net.depthscape.core.command.InventoryTestCommand;
 import net.depthscape.core.command.ReloadCommand;
+import net.depthscape.core.command.TagCommand;
 import net.depthscape.core.config.DatabaseConfig;
 import net.depthscape.core.config.MainConfig;
 import net.depthscape.core.listener.JoinListener;
@@ -59,6 +60,7 @@ public final class CorePlugin extends JavaPlugin {
 
         registerCommand(new ReloadCommand());
         registerCommand(new InventoryTestCommand());
+        registerCommand(new TagCommand());
     }
 
     @Override

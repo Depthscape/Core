@@ -2,7 +2,7 @@
  * BaseCommand
  * Core
  *
- * Created by leobaehre on 9/6/2023
+ * Created by leobaehre on 9/9/2023
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 package net.depthscape.core.command;
@@ -10,6 +10,7 @@ package net.depthscape.core.command;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.user.User;
+import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
