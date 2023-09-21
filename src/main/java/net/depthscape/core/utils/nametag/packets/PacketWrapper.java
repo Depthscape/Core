@@ -60,9 +60,7 @@ public class PacketWrapper {
                 String colorCode = null;
                 Enum<?> colorEnum = null;
 
-                Bukkit.getLogger().info("Color: " + color);
                 if (!color.isEmpty()) {
-                    Bukkit.getLogger().info("Color after: " + color);
                     colorCode = color.substring(color.length() - 1);
                     String chatColor = ChatColor.getByChar(colorCode).name();
 
@@ -70,7 +68,8 @@ public class PacketWrapper {
                         chatColor = "OBFUSCATED";
 
                     // get color from hex integer 16458759
-                    colorEnum = (Enum<?>) getByHexValue.invoke(colorEnum, 16755200);
+                    colorEnum = Enum.valueOf(typeEnumChatFormat, chatColor);
+//                    colorEnum = (Enum<?>) getByHexValue.invoke(colorEnum, 16755200);
 //                    colorEnum = (Enum<?>) getByHexValue.invoke(colorEnum, 16458759);
                     Bukkit.getLogger().info("ColorEnum: " + colorEnum);
                 }

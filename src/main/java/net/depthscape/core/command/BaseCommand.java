@@ -10,6 +10,7 @@ package net.depthscape.core.command;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.user.User;
+import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -38,7 +39,7 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
             User user = User.getUser(player);
             if (minimumRank != null) {
                 if (user.getRank().getWeight() > minimumRank.getWeight()) {
-                    user.sendMessage("千 &#FB2407 The command you seek is lost in the server's pixelated dimension.");
+                    user.sendMessage(getError("The command you seek is lost in the server's pixelated dimension."));
                     return true;
                 }
             }
@@ -68,5 +69,13 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         PluginCommand command = plugin.getCommand(label);
         command.setExecutor(this);
         command.setTabCompleter(this);
+    }
+
+    protected String getErrorIcon() {
+        return ChatUtils.format("千 &#FB2407");
+    }
+
+    protected String getError(String error) {
+        return getErrorIcon() + " " + error;
     }
 }

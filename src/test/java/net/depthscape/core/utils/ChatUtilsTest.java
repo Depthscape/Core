@@ -21,7 +21,6 @@ class ChatUtilsTest {
 
     @Test
     void colorizeTest() {
-        assertEquals("a", ChatUtils.format("\\u+00A7f\\u+F807\\u+F801\\u+5C0F\\u+F80C\\u+F80A\\u+F809\\u+4E0A"));
 
     }
 

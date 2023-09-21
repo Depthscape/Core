@@ -51,11 +51,11 @@ public class JoinListener implements Listener {
     public void onLogin(AsyncPlayerPreLoginEvent event) {
         User user = UserCache.checkOrCreateUserSync(event.getUniqueId());
         UserCache.refreshUserSync(user);
-        List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
-        if (!whitelistedRanks.isEmpty()) {
-            if (!whitelistedRanks.contains(user.getRank().getName())) {
-                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format(CorePlugin.getInstance().getMainConfig().getWhitelist().getMessage()));
-            }
-        }
+        //List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
+        //if (!whitelistedRanks.isEmpty()) {
+            //if (!whitelistedRanks.contains(user.getRank().getName())) {
+                //event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format(CorePlugin.getInstance().getMainConfig().getWhitelist().getMessage()));
+            //}
+        //}
     }
 }
