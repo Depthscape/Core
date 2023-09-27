@@ -12,7 +12,6 @@ import lombok.Getter;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.config.model.Tablist;
 import net.depthscape.core.config.model.Whitelist;
-import net.depthscape.core.rank.Rank;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;

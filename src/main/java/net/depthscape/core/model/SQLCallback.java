@@ -13,5 +13,5 @@ import java.sql.SQLException;
 
 public interface SQLCallback {
 
-    void call(ResultSet result) throws SQLException;
+    void call(ResultSet result);
 }

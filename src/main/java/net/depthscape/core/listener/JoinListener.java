@@ -9,9 +9,12 @@
 package net.depthscape.core.listener;
 
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
-import net.depthscape.core.user.UserCache;
+import net.depthscape.core.user.UserManager;
 import net.depthscape.core.utils.ChatUtils;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,20 +22,34 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class JoinListener implements Listener {
+
+    private final List<OfflineUser> pendingUsers = new ArrayList<>();
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
-
         Player player = event.getPlayer();
-        User user = User.getUser(player);
 
-        user.setPlayer(player);
-        user.setName(player.getName());
-        UserCache.updatePlayerInfo(user);
+        if (pendingUsers.isEmpty()) {
+            errorKick(player);
+            return;
+        }
+
+        OfflineUser offlineUser = pendingUsers.stream().filter(user -> user.getUniqueId().equals(player.getUniqueId())).findFirst().orElse(null);
+
+        if (offlineUser == null) {
+            errorKick(player);
+            return;
+        }
+
+        pendingUsers.remove(offlineUser);
+
+        User user = UserManager.setOnline(offlineUser, player);
 
         player.setPlayerListHeaderFooter(
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getHeader()),
@@ -44,18 +61,36 @@ public class JoinListener implements Listener {
             public void run() {
                 user.setNametag();
             }
-        }.runTaskLater(CorePlugin.getInstance(), 1);
+        }.runTaskLater(CorePlugin.getInstance(), 1L);
     }
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
-        User user = UserCache.checkOrCreateUserSync(event.getUniqueId());
-        UserCache.refreshUserSync(user);
-        //List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
-        //if (!whitelistedRanks.isEmpty()) {
-            //if (!whitelistedRanks.contains(user.getRank().getName())) {
-                //event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format(CorePlugin.getInstance().getMainConfig().getWhitelist().getMessage()));
-            //}
-        //}
+        UUID uuid = event.getUniqueId();
+        OfflineUser user = UserManager.getOfflineUserSync(uuid);
+
+        if (user == null) {
+            // Handle user not found
+            UserManager.createNewUserSync(uuid);
+            user = UserManager.getOfflineUserSync(uuid);
+            if (user == null) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatUtils.format("&cThere was an error loading your data. Please try again later."));
+                return;
+            }
+            pendingUsers.add(user);
+            return;
+        }
+        pendingUsers.add(user);
+
+        List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
+        if (CorePlugin.getInstance().getMainConfig().getWhitelist().isEnabled() && !whitelistedRanks.isEmpty()) {
+            if (!whitelistedRanks.contains(user.getRank().getName())) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format(CorePlugin.getInstance().getMainConfig().getWhitelist().getMessage()));
+            }
+        }
+    }
+
+    private void errorKick(Player player) {
+        player.kickPlayer(ChatUtils.format("&cThere was an error loading your data. Please try again later."));
     }
 }

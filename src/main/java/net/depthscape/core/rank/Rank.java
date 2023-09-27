@@ -29,7 +29,6 @@ public class Rank {
     public Rank(final String name, String chatPrefix, String tabPrefix, final int weight, boolean isStaff) {
         this.name = ChatUtils.format(name);
         this.chatPrefix = ChatUtils.format(chatPrefix);
-        Bukkit.getLogger().info("Chat prefix: " + this.chatPrefix);
         this.tabPrefix = ChatUtils.format(tabPrefix);
         this.weight = weight;
         this.permissions = new ArrayList<>();

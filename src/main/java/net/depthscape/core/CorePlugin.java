@@ -9,14 +9,12 @@
 package net.depthscape.core;
 
 import lombok.Getter;
-import net.depthscape.core.command.BaseCommand;
-import net.depthscape.core.command.InventoryTestCommand;
-import net.depthscape.core.command.ReloadCommand;
-import net.depthscape.core.command.TagCommand;
+import net.depthscape.core.command.*;
 import net.depthscape.core.config.DatabaseConfig;
 import net.depthscape.core.config.MainConfig;
 import net.depthscape.core.listener.JoinListener;
 import net.depthscape.core.listener.ChatListener;
+import net.depthscape.core.listener.QuitListener;
 import net.depthscape.core.rank.RankManager;
 import net.depthscape.core.utils.DatabaseUtils;
 import net.depthscape.core.utils.menu.MenuListener;
@@ -41,6 +39,8 @@ public final class CorePlugin extends JavaPlugin {
         // Plugin startup logic
         instance = this;
 
+        //DisguiseManager.setPlugin(this);
+
         this.databaseConfig = new DatabaseConfig(this);
         this.databaseConfig.load();
         DatabaseUtils.connect(false);
@@ -57,10 +57,12 @@ public final class CorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
+        getServer().getPluginManager().registerEvents(new QuitListener(), this);
 
         registerCommand(new ReloadCommand());
         registerCommand(new InventoryTestCommand());
         registerCommand(new TagCommand());
+        registerCommand(new NickCommand());
     }
 
     @Override

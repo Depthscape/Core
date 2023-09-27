@@ -21,7 +21,7 @@ class ChatUtilsTest {
 
     @Test
     void colorizeTest() {
-
+        //assertEquals("a", ChatColor.getLastColors("§x§f§b§2§4§0§7"));
     }
 
 }

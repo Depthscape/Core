@@ -10,7 +10,6 @@ package net.depthscape.core.utils;
 
 import lombok.Getter;
 import net.depthscape.core.CorePlugin;
-import net.depthscape.core.model.Callback;
 import net.depthscape.core.model.SQLCallback;
 import org.bukkit.Bukkit;
 
@@ -67,33 +66,25 @@ public class DatabaseUtils {
         }
     }
 
-    public static void executeQuery(String query, SQLCallback callback) {
+    public static ResultSet executeQuery(String query) {
         if (!isConnected()) {
             Bukkit.getLogger().info("You are not connected to the database!");
-            return;
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
-            try {
-                callback.call(connection.createStatement().executeQuery(query));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-    }
-
-    public static void executeQuerySync(String query, SQLCallback callback) {
-        if (!isConnected()) {
-            Bukkit.getLogger().info("You are not connected to the database!");
-            return;
+            return null;
         }
 
         try {
-            callback.call(connection.createStatement().executeQuery(query));
+            return connection.createStatement().executeQuery(query);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static void executeQueryAsync(String query, SQLCallback callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
+            ResultSet resultSet = executeQuery(query);
+            callback.call(resultSet);
+        });
 
     }
 
@@ -110,18 +101,9 @@ public class DatabaseUtils {
         }
     }
 
-    public static void executeUpdate(String query) {
-        if (!isConnected()) {
-            Bukkit.getLogger().info("You are not connected to the database!");
-            return;
-        }
-
+    public static void executeUpdateAsync(String query) {
         Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
-            try {
-                connection.createStatement().executeUpdate(query);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            executeUpdateSync(query);
         });
     }
 

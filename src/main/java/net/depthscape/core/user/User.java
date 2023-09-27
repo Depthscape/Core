@@ -11,8 +11,6 @@ package net.depthscape.core.user;
 import lombok.Getter;
 import lombok.Setter;
 import net.depthscape.core.CorePlugin;
-import net.depthscape.core.rank.Rank;
-import net.depthscape.core.rank.RankManager;
 import net.depthscape.core.utils.ChatUtils;
 import net.depthscape.core.utils.menu.Menu;
 import org.bukkit.entity.Player;
@@ -27,27 +25,25 @@ public class User extends OfflineUser {
         super(uniqueId);
     }
 
-
-    private UUID uuid;
-    private String name;
-    private Rank rank = RankManager.getDefaultRank();
-    private int coins;
+    public User(OfflineUser user) {
+        super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished());
+    }
 
     private Player player;
 
     private Menu openMenu;
 
     public static User getUser(Player player) {
-        return UserCache.getUser(player);
+        return UserManager.getUser(player.getUniqueId());
     }
 
     /*--- Nametag ---*/
     public void setNametag() {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), rank.getTabPrefix() + " ", rank.getWeight());
+        CorePlugin.getNametagManager().setNametag(this.player.getName(), getRank().getTabPrefix() + " ", getRank().getWeight());
     }
 
     public void setNametag(boolean hidden) {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), rank.getTabPrefix() + " ", null, rank.getWeight(), false, hidden);
+        CorePlugin.getNametagManager().setNametag(this.player.getName(), getRank().getTabPrefix() + " ", null, getRank().getWeight(), false, hidden);
     }
 
     public void setNametag(String prefix, int weight) {
@@ -62,6 +58,14 @@ public class User extends OfflineUser {
         CorePlugin.getNametagManager().sendTeams(this.player);
     }
 
+    public void vanish() {
+
+    }
+
+    public void unvanish() {
+
+    }
+
     public void openMenu(Menu menu) {
         menu.open(this.player);
         this.openMenu = menu;
@@ -69,5 +73,14 @@ public class User extends OfflineUser {
 
     public void sendMessage(String message) {
         this.player.sendMessage(ChatUtils.format(message));
+    }
+
+    public void nick(String nick) {
+
+//        Disguise disguise = Disguise.builder()
+//                .setName(nick, false).build();
+//
+//        DisguiseManager.getProvider().disguise(this.player, disguise);
+
     }
 }

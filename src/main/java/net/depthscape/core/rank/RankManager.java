@@ -10,7 +10,9 @@ package net.depthscape.core.rank;
 
 import lombok.Getter;
 import net.depthscape.core.utils.DatabaseUtils;
+import org.bukkit.Bukkit;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,25 +29,23 @@ public class RankManager {
 
         Map<Rank, String> inheritanceStrings = new HashMap<>();
 
-        DatabaseUtils.executeQuerySync("SELECT * FROM ranks", resultSet -> {
-            while (resultSet.next()) {
-
-                Rank rank = new Rank(
-                        resultSet.getString("name"),
-                        resultSet.getString("chat_prefix"),
-                        resultSet.getString("tab_prefix"),
-                        resultSet.getInt("weight"),
-                        resultSet.getBoolean("staff")
-                );
-
-                ranks.add(rank);
-//                inheritanceStrings.put(rank, resultSet.getString("inheritance"));
+        DatabaseUtils.executeQueryAsync("SELECT * FROM ranks", resultSet -> {
+            while (true) {
+                try {
+                    if (!resultSet.next()) break;
+                    Rank rank = new Rank(
+                            resultSet.getString("name"),
+                            resultSet.getString("chat_prefix"),
+                            resultSet.getString("tab_prefix"),
+                            resultSet.getInt("weight"),
+                            resultSet.getBoolean("staff")
+                    );
+                    ranks.add(rank);
+                    Bukkit.getLogger().info("Loaded rank: " + rank.getName());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
-
-
-//            if (permissionsSettings == null) {
-//                permissionsSettings = new PermissionsSettings();
-//            }
 
             for (Map.Entry<Rank, String> entry : inheritanceStrings.entrySet()) {
                 Rank rank = entry.getKey();

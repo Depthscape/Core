@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserCacheTest {
+public class UserManagerTest {
 
     //test UserManager#validateUser()
 
