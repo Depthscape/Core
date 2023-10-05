@@ -13,14 +13,11 @@ import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
 import net.depthscape.core.user.UserManager;
 import net.depthscape.core.utils.ChatUtils;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +53,9 @@ public class JoinListener implements Listener {
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getFooter()));
 
         user.sendNametags();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                user.setNametag();
-            }
-        }.runTaskLater(CorePlugin.getInstance(), 1L);
+        user.setOldNametag();
+
+        user.setBossBar("Test");
     }
 
     @EventHandler

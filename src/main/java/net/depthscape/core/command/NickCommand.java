@@ -13,7 +13,15 @@ public class NickCommand extends BaseCommand {
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
-        user.nick(ChatUtils.format(args[0]));
+        //user.nick(ChatUtils.format(args[0]));
+        if (args.length == 1) {
+            user.setBossBar(args[0]);
+        }
+        if (args.length == 2) {
+            user.setCoolBar(args[0], Integer.parseInt(args[1]));
+        }
+
+
     }
 
     @Override

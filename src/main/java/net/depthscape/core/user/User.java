@@ -11,15 +11,30 @@ package net.depthscape.core.user;
 import lombok.Getter;
 import lombok.Setter;
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.tasks.NametagUpdateTask;
 import net.depthscape.core.utils.ChatUtils;
+import net.depthscape.core.utils.CustomFontCharacter;
+import net.depthscape.core.utils.DefaultFontInfo;
+import net.depthscape.core.utils.UnicodeSpaces;
+import net.depthscape.core.utils.hologram.Hologram;
 import net.depthscape.core.utils.menu.Menu;
+import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 public class User extends OfflineUser {
+
+    private Player player;
+
+    private Menu openMenu;
 
     public User(UUID uniqueId) {
         super(uniqueId);
@@ -29,17 +44,53 @@ public class User extends OfflineUser {
         super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished());
     }
 
-    private Player player;
+    /*--- Nametag ---*/
 
-    private Menu openMenu;
+    private Hologram nametag;
+    private NametagUpdateTask nametagUpdateTask;
 
-    public static User getUser(Player player) {
-        return UserManager.getUser(player.getUniqueId());
+    public void setNametag() {
+
+        if (nametag != null) {
+            Bukkit.getOnlinePlayers().stream()
+                    //.filter(op -> !op.getUniqueId().equals(getUniqueId()))
+                    .forEach(nametag::remove);
+        }
+
+        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
+        String fullNametag = prefix + this.player.getName();
+
+        player.setPlayerListName(fullNametag);
+
+        nametag = new Hologram("nametag-" + player.getUniqueId(), fullNametag, player.getLocation());
+        Bukkit.getOnlinePlayers().stream()
+                //.filter(op -> !op.getUniqueId().equals(getUniqueId()))
+                .forEach(op -> {
+                    nametag.spawn(op);
+                    nametag.asPassenger(op, player);
+                });
+
+
+        //this.nametagUpdateTask = new NametagUpdateTask(this, nametag);
+        //getNametagUpdateTask().start();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                CorePlugin.getNametagManager().setNametag(player.getName(), prefix, null, getRank().getWeight(), false, false);
+            }
+        }.runTaskLater(CorePlugin.getInstance(), 1L);
     }
 
-    /*--- Nametag ---*/
-    public void setNametag() {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), getRank().getTabPrefix() + " ", getRank().getWeight());
+    public void setOldNametag() {
+
+        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                CorePlugin.getNametagManager().setNametag(player.getName(), prefix, getRank().getWeight());
+            }
+        }.runTaskLater(CorePlugin.getInstance(), 1L);
     }
 
     public void setNametag(boolean hidden) {
@@ -56,6 +107,56 @@ public class User extends OfflineUser {
 
     public void sendNametags() {
         CorePlugin.getNametagManager().sendTeams(this.player);
+
+//        for (User user : Bukkit.getOnlinePlayers().stream().map(User::getUser).toArray(User[]::new)) {
+//            if (user == this) continue;
+//            user.getNametag().spawn(this.player);
+//        }
+//
+    }
+
+    /*--- Bossbar ---*/
+
+    BossBar bossBar;
+
+    public void setBossBar(String title) {
+
+
+        if (bossBar == null) {
+            bossBar = Bukkit.createBossBar(title, BarColor.WHITE, BarStyle.SOLID);
+        }
+        bossBar.setTitle(ChatUtils.format(title));
+        if (!bossBar.getPlayers().contains(this.player))
+            bossBar.addPlayer(this.player);
+    }
+
+    public void setCoolBar(String text, int bevelWidth) {
+
+        int textWidth = DefaultFontInfo.getStringLength(text, false);
+
+        int barWidth = textWidth + bevelWidth * 2;
+
+
+
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(UnicodeSpaces.MINUS_1).append(CustomFontCharacter.
+                BOSSBAR_END);
+        int totalBarWidth = 1;
+        List<CustomFontCharacter> characters = CustomFontCharacter.getClosestBossbarCenters(barWidth);
+        for (CustomFontCharacter character : characters) {
+
+            stringBuilder.append(character.getCharacter());
+            stringBuilder.append(UnicodeSpaces.MINUS_1).append(CustomFontCharacter.BOSSBAR_END);
+            totalBarWidth += Integer.parseInt(character.name().replaceAll("BOSSBAR_CENTER_", ""));
+            Bukkit.getLogger().info(String.valueOf(totalBarWidth));
+        }
+
+
+        stringBuilder.append(UnicodeSpaces.getUnicode(totalBarWidth)).append(text);
+
+        Bukkit.getLogger().info(stringBuilder.toString());
+        setBossBar(stringBuilder.toString());
     }
 
     public void vanish() {
@@ -76,11 +177,10 @@ public class User extends OfflineUser {
     }
 
     public void nick(String nick) {
+    }
 
-//        Disguise disguise = Disguise.builder()
-//                .setName(nick, false).build();
-//
-//        DisguiseManager.getProvider().disguise(this.player, disguise);
 
+    public static User getUser(Player player) {
+        return UserManager.getUser(player.getUniqueId());
     }
 }

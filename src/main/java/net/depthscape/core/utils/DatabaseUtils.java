@@ -116,12 +116,6 @@ public class DatabaseUtils {
             String username = CorePlugin.getInstance().getDatabaseConfig().getUsername();
             String password = CorePlugin.getInstance().getDatabaseConfig().getPassword();
 
-            Bukkit.getLogger().info("Host: " + host);
-            Bukkit.getLogger().info("Port: " + port);
-            Bukkit.getLogger().info("Database: " + database);
-            Bukkit.getLogger().info("Username: " + username);
-            Bukkit.getLogger().info("Password: " + password);
-
             connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true", username, password);
 
             Bukkit.getLogger().info("&aSuccessfully connected to the database!");
