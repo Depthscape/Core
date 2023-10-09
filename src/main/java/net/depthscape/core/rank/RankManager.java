@@ -38,7 +38,8 @@ public class RankManager {
                             resultSet.getString("chat_prefix"),
                             resultSet.getString("tab_prefix"),
                             resultSet.getInt("weight"),
-                            resultSet.getBoolean("staff")
+                            resultSet.getBoolean("staff"),
+                            resultSet.getLong("discord_role_id")
                     );
                     ranks.add(rank);
                     Bukkit.getLogger().info("Loaded rank: " + rank.getName());

@@ -22,11 +22,12 @@ public class Rank {
 
     private String name, chatPrefix, tabPrefix;
     private int weight;
+    private long discordRoleId;
     private List<String> permissions;
     private Rank inheritance = null;
     private boolean isStaff;
 
-    public Rank(final String name, String chatPrefix, String tabPrefix, final int weight, boolean isStaff) {
+    public Rank(final String name, String chatPrefix, String tabPrefix, final int weight, boolean isStaff, long discordRoleId) {
         this.name = ChatUtils.format(name);
         this.chatPrefix = ChatUtils.format(chatPrefix);
         this.tabPrefix = ChatUtils.format(tabPrefix);

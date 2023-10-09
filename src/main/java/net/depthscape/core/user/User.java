@@ -12,10 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.tasks.NametagUpdateTask;
-import net.depthscape.core.utils.ChatUtils;
-import net.depthscape.core.utils.CustomFontCharacter;
-import net.depthscape.core.utils.DefaultFontInfo;
-import net.depthscape.core.utils.UnicodeSpaces;
+import net.depthscape.core.utils.*;
 import net.depthscape.core.utils.hologram.Hologram;
 import net.depthscape.core.utils.menu.Menu;
 import org.bukkit.Bukkit;
@@ -130,33 +127,37 @@ public class User extends OfflineUser {
             bossBar.addPlayer(this.player);
     }
 
-    public void setCoolBar(String text, int bevelWidth) {
+    public String getCoolBar(String text) {
+        int padding = 3;
 
         int textWidth = DefaultFontInfo.getStringLength(text, false);
+        List<BossBarCharacter> closestBossbarCenters = BossBarCharacter.getCenters(textWidth + padding * 2);
+        // + padding * 2
+        int centerWidth = closestBossbarCenters.stream().mapToInt(BossBarCharacter::getWidth).sum();
+        // end + -1 + center + -1 + end + x + text
+        //x = textWidth / 2 + centerWidth / 2
 
-        int barWidth = textWidth + bevelWidth * 2;
+        int x = -(textWidth / 2 + centerWidth / 2) - 2;
 
-
-
+        // (closestBossbarCenters.size() > 1 ? closestBossbarCenters.size() : 0) / 2)
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(UnicodeSpaces.MINUS_1).append(CustomFontCharacter.
-                BOSSBAR_END);
-        int totalBarWidth = 1;
-        List<CustomFontCharacter> characters = CustomFontCharacter.getClosestBossbarCenters(barWidth);
-        for (CustomFontCharacter character : characters) {
+        stringBuilder.append("&#4e5c24").append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.MINUS_1);
+        for (BossBarCharacter customFontCharacter : closestBossbarCenters) {
+            stringBuilder.append(customFontCharacter.getCharacter())
+                    .append(UnicodeSpace.MINUS_1);
 
-            stringBuilder.append(character.getCharacter());
-            stringBuilder.append(UnicodeSpaces.MINUS_1).append(CustomFontCharacter.BOSSBAR_END);
-            totalBarWidth += Integer.parseInt(character.name().replaceAll("BOSSBAR_CENTER_", ""));
-            Bukkit.getLogger().info(String.valueOf(totalBarWidth));
         }
+        stringBuilder.append(BossBarCharacter.BOSSBAR_END)
+                .append(UnicodeSpace.findBestCombination(x))
+                .append("&r")
+                .append(text);
 
+        return stringBuilder.toString();
+    }
 
-        stringBuilder.append(UnicodeSpaces.getUnicode(totalBarWidth)).append(text);
-
-        Bukkit.getLogger().info(stringBuilder.toString());
-        setBossBar(stringBuilder.toString());
+    public void setCoolBar(String text) {
+        setBossBar(getCoolBar(text));
     }
 
     public void vanish() {

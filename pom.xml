@@ -49,7 +49,7 @@
         <repository>
             <id>github</id>
             <name>Depthscape Core Package</name>
-            <url>https://maven.pkg.github.com/leobaehre/Core</url>
+            <url>https://maven.pkg.github.com/Depthscape/Core</url>
         </repository>
     </distributionManagement>
 

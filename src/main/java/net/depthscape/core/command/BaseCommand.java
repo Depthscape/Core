@@ -7,11 +7,9 @@
  */
 package net.depthscape.core.command;
 
-import net.depthscape.core.CorePlugin;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.user.User;
 import net.depthscape.core.utils.ChatUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -78,4 +76,14 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     protected String getError(String error) {
         return getErrorIcon() + " " + error;
     }
+
+    protected static String joinRemainingArgs(final int startIndex, final String[] array, boolean format) {
+        final StringBuilder joined = new StringBuilder();
+
+        for (int i = startIndex; i < array.length; i++)
+            joined.append((joined.isEmpty()) ? "" : " ").append(ChatUtils.format(array[i]));
+
+        return joined.toString();
+    }
+
 }

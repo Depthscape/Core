@@ -1,7 +1,6 @@
 package net.depthscape.core.command;
 
 import net.depthscape.core.user.User;
-import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -13,15 +12,12 @@ public class NickCommand extends BaseCommand {
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
-        //user.nick(ChatUtils.format(args[0]));
-        if (args.length == 1) {
-            user.setBossBar(args[0]);
-        }
-        if (args.length == 2) {
-            user.setCoolBar(args[0], Integer.parseInt(args[1]));
-        }
 
 
+
+        if (args.length > 0) {
+            user.setCoolBar(joinRemainingArgs(0, args, true));
+        }
     }
 
     @Override

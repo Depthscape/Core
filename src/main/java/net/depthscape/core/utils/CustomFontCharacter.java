@@ -2,9 +2,6 @@ package net.depthscape.core.utils;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 public enum CustomFontCharacter {
 
@@ -38,16 +35,7 @@ public enum CustomFontCharacter {
     BUILDER('\u4E43'),           // Character: 䐃
     HELPER('\u529B'),            // Character: 力
     MODERATOR('\u5200'),         // Character: 刀
-    ADMIN('\u4E86'),             // Character: 了
-    BOSSBAR_CENTER_1('ꈂ'),      // Character: ꈂ
-    BOSSBAR_CENTER_2('ꈃ'),      // Character: ꈃ
-    BOSSBAR_CENTER_4('ꈄ'),      // Character: ꈄ
-    BOSSBAR_CENTER_8('ꈅ'),      // Character: ꈅ
-    BOSSBAR_CENTER_16('ꈆ'),     // Character: ꈆ
-    BOSSBAR_CENTER_32('ꈇ'),     // Character: ꈇ
-    BOSSBAR_CENTER_64('ꈈ'),     // Character: ꈈ
-    BOSSBAR_CENTER_128('ꈉ'),    // Character: ꈉ
-    BOSSBAR_END('ꈁ');          // Character: ꈁ
+    ADMIN('\u4E86');             // Character: 了
 
     private final char character;
 
@@ -58,27 +46,5 @@ public enum CustomFontCharacter {
     @Override
     public String toString() {
         return String.valueOf(character);
-    }
-
-    public static List<CustomFontCharacter> getClosestBossbarCenters(int pixels) {
-        List<CustomFontCharacter> closestCenters = new ArrayList<>();
-        int closestDifference = Integer.MAX_VALUE;
-
-        for (CustomFontCharacter character : CustomFontCharacter.values()) {
-            if (character.name().startsWith("BOSSBAR_CENTER_")) {
-                int centerPixels = Integer.parseInt(character.name().substring("BOSSBAR_CENTER_".length()));
-                int difference = Math.abs(centerPixels - pixels);
-
-                if (difference < closestDifference) {
-                    closestCenters.clear(); // Clear the previous closest values
-                    closestCenters.add(character);
-                    closestDifference = difference;
-                } else if (difference == closestDifference) {
-                    closestCenters.add(character);
-                }
-            }
-        }
-
-        return closestCenters;
     }
 }
