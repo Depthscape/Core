@@ -38,7 +38,7 @@ public class User extends OfflineUser {
     }
 
     public User(OfflineUser user) {
-        super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished());
+        super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished(), user.getDiscordId());
     }
 
     /*--- Nametag ---*/

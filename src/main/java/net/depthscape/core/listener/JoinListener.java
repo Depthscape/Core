@@ -13,8 +13,6 @@ import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
 import net.depthscape.core.user.UserManager;
 import net.depthscape.core.utils.ChatUtils;
-import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

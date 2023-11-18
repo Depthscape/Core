@@ -34,6 +34,7 @@ public class Rank {
         this.weight = weight;
         this.permissions = new ArrayList<>();
         this.isStaff = isStaff;
+        this.discordRoleId = discordRoleId;
     }
 
     public void addPermission(String permission) {

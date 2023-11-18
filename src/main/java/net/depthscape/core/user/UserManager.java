@@ -89,8 +89,6 @@ public class UserManager {
 
         try {
             if (resultSet.next()) {
-                Bukkit.getLogger().info("Loaded user from database: " + resultSet.getString("name"));
-                Bukkit.getLogger().info("Rank: " + resultSet.getString("rank"));
                 return new OfflineUser(resultSet);
             }
         } catch (Exception e) {
@@ -154,7 +152,8 @@ public class UserManager {
         DatabaseUtils.executeUpdateSync(
                 "UPDATE players SET"
                         + " name = '" + user.getName() + "',"
-                        + " vanished = " + (user.isVanished() ? 1 : 0)
+                        + " vanished = " + (user.isVanished() ? 1 : 0) + ","
+                        + " discord_id = '" + user.getDiscordId() + "'"
                         + " WHERE uuid = '" + user.getUniqueId() + "'");
     }
 

@@ -33,6 +33,7 @@ public class OfflineUser {
     private Rank rank;
     private int coins;
     private boolean vanished;
+    private long discordId;
 
     public OfflineUser(ResultSet data) {
 
@@ -42,6 +43,7 @@ public class OfflineUser {
             rank = RankManager.getRank(data.getString("rank"));
             coins = data.getInt("coins");
             vanished = data.getBoolean("vanished");
+            discordId = data.getLong("discord_id");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -59,6 +61,7 @@ public class OfflineUser {
         this.rank = RankManager.getDefaultRank();
         this.coins = 0;
         this.vanished = false;
+        this.discordId = 0;
     }
 
 }
