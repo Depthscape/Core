@@ -10,9 +10,13 @@ package net.depthscape.core.user;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.depthscape.core.CorePlugin;
+import me.neznamy.tab.api.TabAPI;
+import me.neznamy.tab.api.TabPlayer;
 import net.depthscape.core.tasks.NametagUpdateTask;
-import net.depthscape.core.utils.*;
+import net.depthscape.core.utils.BossBarCharacter;
+import net.depthscape.core.utils.ChatUtils;
+import net.depthscape.core.utils.DefaultFontInfo;
+import net.depthscape.core.utils.UnicodeSpace;
 import net.depthscape.core.utils.hologram.Hologram;
 import net.depthscape.core.utils.menu.Menu;
 import org.bukkit.Bukkit;
@@ -20,7 +24,6 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,67 +51,17 @@ public class User extends OfflineUser {
 
     public void setNametag() {
 
-        if (nametag != null) {
-            Bukkit.getOnlinePlayers().stream()
-                    //.filter(op -> !op.getUniqueId().equals(getUniqueId()))
-                    .forEach(nametag::remove);
+        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
+        TabPlayer tabPlayer = TabAPI.getInstance().getPlayer(getUniqueId());
+        if (tabPlayer == null) {
+            return;
         }
+        TabAPI.getInstance().getNameTagManager().setPrefix(tabPlayer, prefix);
+        TabAPI.getInstance().getTabListFormatManager().setPrefix(tabPlayer, prefix);
 
-        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
-        String fullNametag = prefix + this.player.getName();
-
-        player.setPlayerListName(fullNametag);
-
-        nametag = new Hologram("nametag-" + player.getUniqueId(), fullNametag, player.getLocation());
-        Bukkit.getOnlinePlayers().stream()
-                //.filter(op -> !op.getUniqueId().equals(getUniqueId()))
-                .forEach(op -> {
-                    nametag.spawn(op);
-                    nametag.asPassenger(op, player);
-                });
-
-
-        //this.nametagUpdateTask = new NametagUpdateTask(this, nametag);
-        //getNametagUpdateTask().start();
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                CorePlugin.getNametagManager().setNametag(player.getName(), prefix, null, getRank().getWeight(), false, false);
-            }
-        }.runTaskLater(CorePlugin.getInstance(), 1L);
-    }
-
-    public void setOldNametag() {
-
-        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                CorePlugin.getNametagManager().setNametag(player.getName(), prefix, getRank().getWeight());
-            }
-        }.runTaskLater(CorePlugin.getInstance(), 1L);
-    }
-
-    public void setNametag(boolean hidden) {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), getRank().getTabPrefix() + " ", null, getRank().getWeight(), false, hidden);
-    }
-
-    public void setNametag(String prefix, int weight) {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), prefix + " ", null, weight);
-    }
-
-    public void setNametag(String prefix, int weight, boolean hidden) {
-        CorePlugin.getNametagManager().setNametag(this.player.getName(), prefix + " ", null, weight, false, hidden);
     }
 
     public void sendNametags() {
-        CorePlugin.getNametagManager().sendTeams(this.player);
-
-//        for (User user : Bukkit.getOnlinePlayers().stream().map(User::getUser).toArray(User[]::new)) {
-//            if (user == this) continue;
-//            user.getNametag().spawn(this.player);
-//        }
 //
     }
 
@@ -161,7 +114,6 @@ public class User extends OfflineUser {
     }
 
     public void vanish() {
-
     }
 
     public void unvanish() {

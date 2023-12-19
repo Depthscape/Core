@@ -9,6 +9,9 @@
 package net.depthscape.core;
 
 import lombok.Getter;
+import me.neznamy.tab.api.TabAPI;
+import me.neznamy.tab.api.TabPlayer;
+import me.neznamy.tab.api.event.player.PlayerLoadEvent;
 import net.depthscape.core.command.*;
 import net.depthscape.core.config.DatabaseConfig;
 import net.depthscape.core.config.MainConfig;
@@ -16,9 +19,11 @@ import net.depthscape.core.listener.JoinListener;
 import net.depthscape.core.listener.ChatListener;
 import net.depthscape.core.listener.QuitListener;
 import net.depthscape.core.rank.RankManager;
+import net.depthscape.core.user.User;
+import net.depthscape.core.user.UserManager;
 import net.depthscape.core.utils.DatabaseUtils;
+import net.depthscape.core.utils.TabUtil;
 import net.depthscape.core.utils.menu.MenuListener;
-import net.depthscape.core.utils.nametag.NametagManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class CorePlugin extends JavaPlugin {
@@ -30,10 +35,6 @@ public final class CorePlugin extends JavaPlugin {
     private MainConfig mainConfig;
     @Getter
     private DatabaseConfig databaseConfig;
-
-    @Getter
-    private static NametagManager nametagManager;
-
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -50,15 +51,12 @@ public final class CorePlugin extends JavaPlugin {
         this.mainConfig = new MainConfig(this);
         this.mainConfig.load();
 
-
-        nametagManager = new NametagManager();
-
-
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
 
+        registerTabEvents();
         registerCommand(new ReloadCommand());
         registerCommand(new InventoryTestCommand());
         registerCommand(new TagCommand());
@@ -73,5 +71,13 @@ public final class CorePlugin extends JavaPlugin {
 
     private void registerCommand(BaseCommand command) {
         command.register(this);
+    }
+
+    private void registerTabEvents() {
+        TabAPI.getInstance().getEventBus().register(PlayerLoadEvent.class, (event) -> {
+            TabPlayer tabPlayer = event.getPlayer();
+            User user = UserManager.getUser(tabPlayer.getUniqueId());
+            user.setNametag();
+        });
     }
 }

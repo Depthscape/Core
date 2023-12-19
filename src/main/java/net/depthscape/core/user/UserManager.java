@@ -87,6 +87,7 @@ public class UserManager {
             return null;
         }
 
+
         try {
             if (resultSet.next()) {
                 return new OfflineUser(resultSet);

@@ -8,6 +8,7 @@
 
 package net.depthscape.core.listener;
 
+import me.neznamy.tab.api.TabAPI;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
@@ -27,7 +28,7 @@ public class JoinListener implements Listener {
 
     private final List<OfflineUser> pendingUsers = new ArrayList<>();
 
-    @EventHandler
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGH)
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
         Player player = event.getPlayer();
@@ -46,20 +47,24 @@ public class JoinListener implements Listener {
 
         pendingUsers.remove(offlineUser);
 
+
         User user = UserManager.setOnline(offlineUser, player);
 
         player.setPlayerListHeaderFooter(
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getHeader()),
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getFooter()));
 
-        user.sendNametags();
-        user.setOldNametag();
+        //user.sendNametags();
+        //user.setNametag();
+
+
 
         //user.setCoolBar("Test");
     }
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
+
         UUID uuid = event.getUniqueId();
         OfflineUser user = UserManager.getOfflineUserSync(uuid);
 
@@ -71,11 +76,14 @@ public class JoinListener implements Listener {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatUtils.format("&cThere was an error loading your data. Please try again later."));
                 return;
             }
-            pendingUsers.add(user);
-            return;
         }
-        pendingUsers.add(user);
 
+        checkWhitelist(user, event);
+
+        pendingUsers.add(user);
+    }
+
+    private void checkWhitelist(OfflineUser user, AsyncPlayerPreLoginEvent event) {
         List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
         if (CorePlugin.getInstance().getMainConfig().getWhitelist().isEnabled() && !whitelistedRanks.isEmpty()) {
             if (!whitelistedRanks.contains(user.getRank().getName())) {
@@ -86,5 +94,6 @@ public class JoinListener implements Listener {
 
     private void errorKick(Player player) {
         player.kickPlayer(ChatUtils.format("&cThere was an error loading your data. Please try again later."));
+        System.out.println("kicked player");
     }
 }
