@@ -9,7 +9,9 @@
 package net.depthscape.core.listener;
 
 import me.neznamy.tab.api.TabAPI;
+import me.neznamy.tab.api.TabPlayer;
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.model.Box;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
 import net.depthscape.core.user.UserManager;
@@ -28,7 +30,7 @@ public class JoinListener implements Listener {
 
     private final List<OfflineUser> pendingUsers = new ArrayList<>();
 
-    @EventHandler(priority = org.bukkit.event.EventPriority.HIGH)
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
         Player player = event.getPlayer();
@@ -54,10 +56,14 @@ public class JoinListener implements Listener {
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getHeader()),
                 ChatUtils.format(CorePlugin.getInstance().getMainConfig().getTablist().getFooter()));
 
-        //user.sendNametags();
-        //user.setNametag();
+        TabPlayer tabPlayer = TabAPI.getInstance().getPlayer(player.getUniqueId());
+        if (tabPlayer != null && tabPlayer.isLoaded()) {
+            user.setNametag();
+        }
 
+        user.hideVanished();
 
+        user.addInfoPanelBox("time", CorePlugin.getInstance().getUpdateTimeBoxTask().getBox(), false);
 
         //user.setCoolBar("Test");
     }
@@ -71,6 +77,7 @@ public class JoinListener implements Listener {
         if (user == null) {
             // Handle user not found
             UserManager.createNewUserSync(uuid);
+            System.out.println("Created new user " + uuid);
             user = UserManager.getOfflineUserSync(uuid);
             if (user == null) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatUtils.format("&cThere was an error loading your data. Please try again later."));
@@ -94,6 +101,6 @@ public class JoinListener implements Listener {
 
     private void errorKick(Player player) {
         player.kickPlayer(ChatUtils.format("&cThere was an error loading your data. Please try again later."));
-        System.out.println("kicked player");
+        System.out.println("Kicked player " + player.getName() + " because of error");
     }
 }

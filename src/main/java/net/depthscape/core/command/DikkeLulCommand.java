@@ -5,13 +5,15 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class TagCommand extends BaseCommand {
-    public TagCommand() {
-        super("tag", "Admin");
+public class DikkeLulCommand extends BaseCommand{
+    public DikkeLulCommand() {
+        super("dikkelul", "Moderator");
     }
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
+
+        user.getInfoPanelRunnable().cancel();
 
     }
 

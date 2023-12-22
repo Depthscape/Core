@@ -121,12 +121,12 @@ public enum DefaultFontInfo {
 		for (DefaultFontInfo dFI : DefaultFontInfo.values()) {
 			if (dFI.getCharacter() == c) return dFI;
 		}
-		return DefaultFontInfo.DEFAULT;
+		return null;
 	}
 
-	public static int getStringLength(String str, boolean bold) {
+	public static int getStringLength(String str) {
 
-		// strip color and unicodes
+		// strip color
 		str = ChatColor.stripColor(str);
 
 		int length = 0;
@@ -137,8 +137,17 @@ public enum DefaultFontInfo {
 				continue;
 			}
 			DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-			length += isBold ? dFI.getBoldLength() : dFI.getLength();
-			isBold = false;
+			if (dFI != null) {
+				length += isBold ? dFI.getBoldLength() : dFI.getLength();
+				isBold = false;
+				continue;
+			}
+			CustomFontCharacter cFC = CustomFontCharacter.getCharacter(c);
+			if (cFC != null) {
+				length = cFC.getLength();
+				isBold = false;
+			}
+
 		}
 		return length;
 	}

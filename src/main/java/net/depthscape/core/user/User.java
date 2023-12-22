@@ -12,29 +12,34 @@ import lombok.Getter;
 import lombok.Setter;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
-import net.depthscape.core.tasks.NametagUpdateTask;
-import net.depthscape.core.utils.BossBarCharacter;
-import net.depthscape.core.utils.ChatUtils;
-import net.depthscape.core.utils.DefaultFontInfo;
-import net.depthscape.core.utils.UnicodeSpace;
-import net.depthscape.core.utils.hologram.Hologram;
-import net.depthscape.core.utils.menu.Menu;
+import net.depthscape.core.CorePlugin;
+import net.depthscape.core.model.Box;
+import net.depthscape.core.model.Notification;
+import net.depthscape.core.rank.Rank;
+import net.depthscape.core.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
 public class User extends OfflineUser {
 
+    BossBar bossBar;
     private Player player;
 
-    private Menu openMenu;
+    private List<Notification> currentNotifications = new ArrayList<>();
+
+    private Map<String, Box> infoPanel = new HashMap<>();
+    private BukkitTask infoPanelRunnable;
+
+    private boolean staffChatSendEnabled = false;
 
     public User(UUID uniqueId) {
         super(uniqueId);
@@ -44,14 +49,17 @@ public class User extends OfflineUser {
         super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished(), user.getDiscordId());
     }
 
+    public static User getUser(Player player) {
+        return UserManager.getUser(player.getUniqueId());
+    }
+
+    public void save() {
+        UserManager.saveUser(this);
+    }
+
     /*--- Nametag ---*/
 
-    private Hologram nametag;
-    private NametagUpdateTask nametagUpdateTask;
-
-    public void setNametag() {
-
-        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
+    private void setNametag(String prefix) {
         TabPlayer tabPlayer = TabAPI.getInstance().getPlayer(getUniqueId());
         if (tabPlayer == null) {
             return;
@@ -59,81 +67,198 @@ public class User extends OfflineUser {
         TabAPI.getInstance().getNameTagManager().setPrefix(tabPlayer, prefix);
         TabAPI.getInstance().getTabListFormatManager().setPrefix(tabPlayer, prefix);
 
-    }
-
-    public void sendNametags() {
-//
-    }
-
-    /*--- Bossbar ---*/
-
-    BossBar bossBar;
-
-    public void setBossBar(String title) {
-
-
-        if (bossBar == null) {
-            bossBar = Bukkit.createBossBar(title, BarColor.WHITE, BarStyle.SOLID);
+        String teamName = getRank().getName().toLowerCase();
+        if (isVanished()) {
+            teamName = "vanish_" + teamName;
         }
-        bossBar.setTitle(ChatUtils.format(title));
-        if (!bossBar.getPlayers().contains(this.player))
-            bossBar.addPlayer(this.player);
+
+        tabPlayer.setTemporaryGroup(teamName);
     }
 
-    public String getCoolBar(String text) {
+    public void setNametag() {
+        String prefix = ChatUtils.format(getRank().getTabPrefix() + " ");
+        setNametag(prefix);
+
+    }
+    /*--- Bossbar ---*/
+    public void setInfoPanel() {
+        if (bossBar == null) {
+            bossBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+        }
+        if (!bossBar.getPlayers().contains(this.player)) bossBar.addPlayer(this.player);
+
+        infoPanelRunnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                bossBar.setTitle(ChatUtils.format(getCoolBar(infoPanel.values().stream().toList())));
+            }
+        }.runTaskTimer(CorePlugin.getInstance(), 0, 2);
+    }
+
+    public void addInfoPanelBox(String id, Box box, boolean inFront) {
+        if (!inFront) {
+            infoPanel.put(id, box);
+            return;
+        }
+        Map<String, Box> newMap = new HashMap<>();
+        newMap.put(id, box);
+        newMap.putAll(infoPanel);
+        infoPanel = newMap;
+    }
+
+    public void removeInfoPanelBox(String id) {
+        infoPanel.remove(id);
+    }
+
+    public void getBoxId() {
+        infoPanel.clear();
+    }
+
+    public void sendNotification(String message) {
+        if (!currentNotifications.isEmpty()) {
+            currentNotifications.get(0).remove();
+            currentNotifications.remove(0);
+        }
+        currentNotifications.add(new Notification(this, message, n -> currentNotifications.remove(n)));
+        player.playSound(player.getLocation(), "custom.ui.popup", 1, 1);
+    }
+
+
+    public String getCoolBar(List<Box> boxes) {
         int padding = 3;
 
-        int textWidth = DefaultFontInfo.getStringLength(text, false);
-        List<BossBarCharacter> closestBossbarCenters = BossBarCharacter.getCenters(textWidth + padding * 2);
-        // + padding * 2
-        int centerWidth = closestBossbarCenters.stream().mapToInt(BossBarCharacter::getWidth).sum();
-        // end + -1 + center + -1 + end + x + text
-        //x = textWidth / 2 + centerWidth / 2
+        StringBuilder boxBuilder = new StringBuilder();
+        boxBuilder.append(ChatUtils.format("&#FFFEFD"));
+        for (int i = 0; i < boxes.size(); i++) {
+            if (i != 0) {
+                boxBuilder.append("  ");
+            }
 
-        int x = -(textWidth / 2 + centerWidth / 2) - 2;
+            String text = boxes.get(i).getText();
 
-        // (closestBossbarCenters.size() > 1 ? closestBossbarCenters.size() : 0) / 2)
+            int textWidth = DefaultFontInfo.getStringLength(text);
+            List<BossBarCharacter> closestBossbarCenters = BossBarCharacter.getCenters(textWidth + padding * 2 - 1);
+            int centerWidth = closestBossbarCenters.stream().mapToInt(BossBarCharacter::getWidth).sum();
+            // end + -1 + center + -1 + end + x + text
+            //x = textWidth / 2 + centerWidth / 2
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("&#4e5c24").append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.MINUS_1);
-        for (BossBarCharacter customFontCharacter : closestBossbarCenters) {
-            stringBuilder.append(customFontCharacter.getCharacter())
-                    .append(UnicodeSpace.MINUS_1);
+            int x = -(textWidth / 2 + centerWidth / 2) - 2;
 
+            // (closestBossbarCenters.size() > 1 ? closestBossbarCenters.size() : 0) / 2)
+
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.MINUS_1);
+            for (BossBarCharacter customFontCharacter : closestBossbarCenters) {
+                stringBuilder.append(customFontCharacter.getCharacter()).append(UnicodeSpace.MINUS_1);
+
+            }
+            stringBuilder.append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.findBestCombination(x)).append(text);
+
+            boxBuilder.append(ChatUtils.format(stringBuilder.toString()));
         }
-        stringBuilder.append(BossBarCharacter.BOSSBAR_END)
-                .append(UnicodeSpace.findBestCombination(x))
-                .append("&r")
-                .append(text);
 
-        return stringBuilder.toString();
+        return boxBuilder.toString();
     }
 
-    public void setCoolBar(String text) {
-        setBossBar(getCoolBar(text));
+    /*--- Vanish ---*/
+
+    public void vanish(boolean silent) {
+
+        if (isVanished()) return;
+        setVanished(true);
+
+        Rank rank = getRank();
+
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            if (target == player) continue;
+            User targetUser = User.getUser(target);
+            Rank targetRank = targetUser.getRank();
+            if (targetRank.getWeight() <= rank.getWeight()) {
+                if (!silent) {
+                    targetUser.sendMessage(ChatUtils.getInfoMessage(player.getName() + " has vanished."));
+                }
+                continue;
+            }
+
+            target.hidePlayer(CorePlugin.getInstance(), player);
+        }
+
+        String prefix = ChatUtils.format(getRank().getVanishPrefix() + " ");
+        setNametag(prefix);
+
+
+        addInfoPanelBox("vanished", new Box(CustomFontCharacter.VANISHED + " Vanished"), true);
+        if (!silent) {
+            sendNotification(CustomFontCharacter.VANISH_ON.toString());
+            sendMessage(ChatUtils.getInfoMessage("You have vanished."));
+        }
     }
 
-    public void vanish() {
+    public void unvanish(boolean silent) {
+
+        if (!isVanished()) return;
+        setVanished(false);
+
+        Rank rank = getRank();
+
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            if (target == player) continue;
+            User targetUser = User.getUser(target);
+            Rank targetRank = targetUser.getRank();
+
+            if (targetRank.getWeight() <= rank.getWeight()) {
+                if (!silent) {
+                    targetUser.sendMessage(ChatUtils.getInfoMessage(player.getName() + " has unvanished."));
+                }
+                continue;
+            }
+            target.showPlayer(CorePlugin.getInstance(), player);
+        }
+
+        setNametag();
+
+        removeInfoPanelBox("vanished");
+        if (!silent) {
+            sendNotification(CustomFontCharacter.VANISH_OFF.toString());
+            sendMessage(ChatUtils.getInfoMessage("You have unvanished."));
+        }
     }
 
-    public void unvanish() {
+    public void hideVanished() {
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            User targetUser = User.getUser(target);
+            if (!targetUser.isVanished()) continue;
+            Rank targetRank = targetUser.getRank();
+            if (targetRank.getWeight() >= getRank().getWeight()) {
+                target.hidePlayer(CorePlugin.getInstance(), player);
+            }
+        }
 
+        if (isVanished()) {
+            vanish(true);
+        }
     }
 
-    public void openMenu(Menu menu) {
-        menu.open(this.player);
-        this.openMenu = menu;
+    public void toggleVanish() {
+        if (isVanished()) {
+            unvanish(false);
+        } else {
+            vanish(false);
+        }
+    }
+
+    /*--- Staff Chat ---*/
+
+    public void toggleStaffChat() {
+        staffChatSendEnabled = !staffChatSendEnabled;
+        if (staffChatSendEnabled) {
+            sendMessage("&aYou are now in staff chat mode. All messages will be sent to staff chat.");
+        } else {
+            sendMessage("&aYou are no longer in staff chat mode.");
+        }
     }
 
     public void sendMessage(String message) {
         this.player.sendMessage(ChatUtils.format(message));
-    }
-
-    public void nick(String nick) {
-    }
-
-
-    public static User getUser(Player player) {
-        return UserManager.getUser(player.getUniqueId());
     }
 }

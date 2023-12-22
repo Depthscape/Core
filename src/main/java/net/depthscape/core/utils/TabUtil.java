@@ -26,4 +26,26 @@ public class TabUtil {
 
         return tab;
     }
+
+    /**
+     * This is a special method to sort nametags in
+     * the tablist. It takes a priority and converts
+     * it to an alphabetic representation to force a
+     * specific sort.
+     *
+     * @param input the sort priority
+     * @return the team name
+     */
+    public static String getNameFromInput(int input) {
+        if (input < 0) return "Z";
+        char letter = (char) ((input / 5) + 65);
+        int repeat = input % 5 + 1;
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < repeat; i++) {
+            builder.append(letter);
+        }
+        return builder.toString();
+    }
+
+
 }

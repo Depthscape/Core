@@ -1,23 +1,19 @@
 package net.depthscape.core.command;
 
 import net.depthscape.core.user.User;
+import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class NickCommand extends BaseCommand {
-    public NickCommand() {
-        super("nick", "Admin");
+public class VanishCommand extends BaseCommand{
+    public VanishCommand( ) {
+        super("vanish", "Helper");
     }
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
-
-
-
-        if (args.length > 0) {
-            user.setCoolBar(joinRemainingArgs(0, args, true));
-        }
+        user.toggleVanish();
     }
 
     @Override

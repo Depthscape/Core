@@ -73,7 +73,10 @@ public class DatabaseUtils {
         }
 
         try {
-            return connection.createStatement().executeQuery(query);
+
+            ResultSet resultSet = connection.createStatement().executeQuery(query);
+            System.out.println("DATABASE executeQuery: " + query);
+            return resultSet;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -95,6 +98,7 @@ public class DatabaseUtils {
         }
 
         try {
+            System.out.println("DATABASE executeUpdate: " + query);
             connection.createStatement().executeUpdate(query);
         } catch (Exception e) {
             e.printStackTrace();

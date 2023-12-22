@@ -1,10 +1,10 @@
 package net.depthscape.core.user;
 
+import lombok.Getter;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.model.Callback;
 import net.depthscape.core.rank.RankManager;
 import net.depthscape.core.utils.DatabaseUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public class UserManager {
 
+    @Getter
     private static final List<User> onlineUsers = new ArrayList<>();
 
     public static User setOnline(OfflineUser offlineUser, Player player) {
@@ -27,7 +28,10 @@ public class UserManager {
         user.setPlayer(player);
         user.setName(player.getName());
 
-        updateUser(user);
+        saveUser(user);
+        System.out.println("TEST - User " + player.getName() + " updated");
+
+        user.setInfoPanel();
 
 
         onlineUsers.add(user);
@@ -84,6 +88,7 @@ public class UserManager {
         ResultSet resultSet = DatabaseUtils.executeQuery("SELECT * FROM players WHERE uuid = '" + uniqueId.toString() + "'");
 
         if (resultSet == null) {
+            System.out.println("TEST ResultSet is null");
             return null;
         }
 
@@ -91,6 +96,8 @@ public class UserManager {
         try {
             if (resultSet.next()) {
                 return new OfflineUser(resultSet);
+            } else {
+                System.out.println("TEST ResultSet is empty");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,16 +147,16 @@ public class UserManager {
                         + " ('" + uniqueId + "', NULL, '" + RankManager.getDefaultRank().getName() + "', 0, 0)");
     }
 
-    public static void updateUser(User user) {
+    public static void saveUser(User user) {
         new BukkitRunnable() {
             @Override
             public void run() {
-                updateUserSync(user);
+                saveUserSync(user);
             }
         }.runTaskAsynchronously(CorePlugin.getInstance());
     }
 
-    public static void updateUserSync(User user) {
+    public static void saveUserSync(User user) {
         DatabaseUtils.executeUpdateSync(
                 "UPDATE players SET"
                         + " name = '" + user.getName() + "',"

@@ -15,15 +15,15 @@ import me.neznamy.tab.api.event.player.PlayerLoadEvent;
 import net.depthscape.core.command.*;
 import net.depthscape.core.config.DatabaseConfig;
 import net.depthscape.core.config.MainConfig;
-import net.depthscape.core.listener.JoinListener;
 import net.depthscape.core.listener.ChatListener;
+import net.depthscape.core.listener.JoinListener;
 import net.depthscape.core.listener.QuitListener;
 import net.depthscape.core.rank.RankManager;
+import net.depthscape.core.tasks.UpdateTimeBoxTask;
 import net.depthscape.core.user.User;
 import net.depthscape.core.user.UserManager;
 import net.depthscape.core.utils.DatabaseUtils;
-import net.depthscape.core.utils.TabUtil;
-import net.depthscape.core.utils.menu.MenuListener;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class CorePlugin extends JavaPlugin {
@@ -35,6 +35,10 @@ public final class CorePlugin extends JavaPlugin {
     private MainConfig mainConfig;
     @Getter
     private DatabaseConfig databaseConfig;
+
+    @Getter
+    private UpdateTimeBoxTask updateTimeBoxTask;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -53,19 +57,27 @@ public final class CorePlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
-        getServer().getPluginManager().registerEvents(new MenuListener(), this);
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
 
         registerTabEvents();
         registerCommand(new ReloadCommand());
-        registerCommand(new InventoryTestCommand());
-        registerCommand(new TagCommand());
-        registerCommand(new NickCommand());
+        registerCommand(new StaffChatCommand());
+        registerCommand(new VanishCommand());
+        registerCommand(new DikkeLulCommand());
+
+
+        updateTimeBoxTask = new UpdateTimeBoxTask();
+        updateTimeBoxTask.runTaskTimer(this, 0, 20L);
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        for (User user : UserManager.getOnlineUsers()) {
+            user.save();
+            Bukkit.getLogger().info("User " + user.getName() + " saved");
+        }
+        updateTimeBoxTask.cancel();
         DatabaseUtils.disconnect();
     }
 
@@ -77,6 +89,7 @@ public final class CorePlugin extends JavaPlugin {
         TabAPI.getInstance().getEventBus().register(PlayerLoadEvent.class, (event) -> {
             TabPlayer tabPlayer = event.getPlayer();
             User user = UserManager.getUser(tabPlayer.getUniqueId());
+
             user.setNametag();
         });
     }

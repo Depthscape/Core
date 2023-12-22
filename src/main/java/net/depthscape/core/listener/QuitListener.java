@@ -14,11 +14,11 @@ public class QuitListener implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         event.setQuitMessage(null);
         User user = User.getUser(event.getPlayer());
-//        user.getNametagUpdateTask().cancel();
-//        Bukkit.getOnlinePlayers().forEach(op -> {
-//            Hologram hologram = user.getNametag();
-//            if (hologram.getArmorStand() != null) hologram.remove(op);
-//        });
+
+        user.getInfoPanel().clear();
+        user.getInfoPanelRunnable().cancel();
+
+        user.save();
         UserManager.removeUser(user);
 
     }

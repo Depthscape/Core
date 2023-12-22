@@ -48,5 +48,20 @@ public class ChatUtils {
         return last.getColor();
     }
 
+    public static String getInfoMessage(String message) {
+        return CustomFontCharacter.INFO_ICON + " &#3A86FF" + message;
+    }
+
+    public static String getWarningMessage(String message) {
+        return CustomFontCharacter.WARNING_ICON + " &#FB2407" + message;
+    }
+
+    public static String getChatFormat() {
+        return "%prefix% %player% &f: %message%";
+    }
+
+    public static String getStaffChatFormat() {
+        return "&3A86FF[SC] %prefix% %player% &#A5A5A5: %message%";
+    }
 }
 

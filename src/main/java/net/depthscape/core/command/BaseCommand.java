@@ -69,15 +69,11 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
         command.setTabCompleter(this);
     }
 
-    protected String getErrorIcon() {
-        return ChatUtils.format("千 &#FB2407");
-    }
-
     protected String getError(String error) {
-        return getErrorIcon() + " " + error;
+        return ChatUtils.getWarningMessage(error);
     }
 
-    protected static String joinRemainingArgs(final int startIndex, final String[] array, boolean format) {
+    protected static String joinRemainingArgs(final int startIndex, final String[] array) {
         final StringBuilder joined = new StringBuilder();
 
         for (int i = startIndex; i < array.length; i++)
