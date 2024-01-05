@@ -5,6 +5,7 @@ import net.depthscape.core.event.OfflineUserAsyncChatEvent;
 import net.depthscape.core.event.WebSocketClientRecieveDataEvent;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.UserManager;
+import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.java_websocket.client.WebSocketClient;
@@ -33,23 +34,8 @@ public class WSClient extends WebSocketClient {
         DataType type = DataType.valueOf(new JSONObject(s).getString("type"));
         JSONObject data = new JSONObject(s);
         switch (type) {
-            case CHAT_MESSAGE -> {
-                String server = data.getString("server");
-                UUID uuid = UUID.fromString(data.getString("player"));
-                OfflineUser user = UserManager.getOfflineUserSync(uuid);
-                String message = data.getString("message");
-                OfflineUserAsyncChatEvent event = new OfflineUserAsyncChatEvent(user, message, server);
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        Bukkit.getPluginManager().callEvent(event);
-                    }
-                }.runTask(CorePlugin.getInstance());
-            }
-            case SHUTDOWN -> {
-                // websocket server is shutting down
-                Bukkit.getLogger().info("Lost connection to websocket server");
-            }
+            case CHAT_MESSAGE -> ChatUtils.sendDiscordMessage(data);
+            case SHUTDOWN -> Bukkit.getLogger().info("Lost connection to websocket server");
         }
 
         WebSocketClientRecieveDataEvent event = new WebSocketClientRecieveDataEvent(type, data);

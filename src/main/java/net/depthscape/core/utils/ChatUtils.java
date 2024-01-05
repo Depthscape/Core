@@ -9,8 +9,11 @@
 package net.depthscape.core.utils;
 
 import lombok.experimental.UtilityClass;
+import net.depthscape.core.user.UserManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.Bukkit;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,7 +64,21 @@ public class ChatUtils {
     }
 
     public static String getStaffChatFormat() {
-        return "&3A86FF[SC] %prefix% %player% &#A5A5A5: %message%";
+        return "&#3A86FF[SC] %prefix% %player% &#A5A5A5: %message%";
+    }
+
+    public static String getDiscordChatFormat() {
+        return "&#5661EA[D] &f%prefix% %player% &f: %message%";
+    }
+
+    public static void sendDiscordMessage(JSONObject data) {
+        UserManager.getOnlineUsers().forEach(user -> {
+            user.sendMessage(getDiscordChatFormat()
+                    .replace("%prefix%", data.getString("prefix"))
+                    .replace("%player%", data.getString("player"))
+                    .replace("%message%", data.getString("message"))
+            );
+        });
     }
 }
 

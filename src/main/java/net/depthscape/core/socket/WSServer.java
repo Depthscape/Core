@@ -4,6 +4,7 @@ import net.depthscape.core.CorePlugin;
 import net.depthscape.core.event.OfflineUserAsyncChatEvent;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.UserManager;
+import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.java_websocket.WebSocket;
@@ -82,6 +83,6 @@ public class WSServer extends WebSocketServer {
         data.put("player", user.getUniqueId());
         data.put("message", message);
         broadcast(DataType.CHAT_MESSAGE, data);
-
+        ChatUtils.sendDiscordMessage(data);
     }
 }
