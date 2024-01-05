@@ -46,7 +46,12 @@ public class WSClient extends WebSocketClient {
                     }
                 }.runTask(CorePlugin.getInstance());
             }
+            case SHUTDOWN -> {
+                // websocket server is shutting down
+                Bukkit.getLogger().info("Lost connection to websocket server");
+            }
         }
+
         WebSocketClientRecieveDataEvent event = new WebSocketClientRecieveDataEvent(type, data);
         Bukkit.getPluginManager().callEvent(event);
     }

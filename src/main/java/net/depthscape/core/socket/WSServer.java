@@ -68,4 +68,20 @@ public class WSServer extends WebSocketServer {
     public void onStart() {
 
     }
+
+    public void broadcast(DataType type, JSONObject content) {
+        JSONObject data = new JSONObject();
+        data.put("type", type);
+        data.put("content", content);
+        broadcast(data.toString());
+    }
+
+    public void handleChatMessage(OfflineUser user, String message, String server) {
+        JSONObject data = new JSONObject();
+        data.put("server", server);
+        data.put("player", user.getUniqueId());
+        data.put("message", message);
+        broadcast(DataType.CHAT_MESSAGE, data);
+
+    }
 }
