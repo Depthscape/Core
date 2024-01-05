@@ -75,21 +75,7 @@ public final class CorePlugin extends JavaPlugin {
 
         // websocket
         isServer = this.mainConfig.getWebsocket().isServer();
-
-        if (isServer) {
-            this.webSocketServer = new WSServer(new InetSocketAddress(this.mainConfig.getWebsocket().getHost(), this.mainConfig.getWebsocket().getPort()));
-            this.webSocketServer.start();
-            Bukkit.getLogger().info("Websocket server started on address " + this.mainConfig.getWebsocket().getHost() + ":" + this.mainConfig.getWebsocket().getPort());
-        } else {
-            this.webSocketClient = new WSClient(URI.create("ws://" + this.mainConfig.getWebsocket().getHost() + ":" + this.mainConfig.getWebsocket().getPort()));
-            try {
-                boolean success = webSocketClient.connectBlocking(10, TimeUnit.SECONDS);
-                System.out.println(success);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Bukkit.getLogger().info("Websocket client connected to address " + this.mainConfig.getWebsocket().getHost() + this.mainConfig.getWebsocket().getPort());
-        }
+        setWebsocket();
 
 
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
@@ -102,6 +88,7 @@ public final class CorePlugin extends JavaPlugin {
         registerCommand(new VanishCommand());
         registerCommand(new TestCommand());
         registerCommand(new NoClipCommand());
+        getCommand("websocketrestart").setExecutor(new WebSocketRestartCommand());
 
 
         updateTimeBoxTask = new UpdateTimeBoxTask();
@@ -121,6 +108,23 @@ public final class CorePlugin extends JavaPlugin {
         updateTimeBoxTask.cancel();
         noClipCheckTask.cancel();
         DatabaseUtils.disconnect();
+    }
+
+    public void setWebsocket() {
+        if (isServer) {
+            this.webSocketServer = new WSServer(new InetSocketAddress(this.mainConfig.getWebsocket().getHost(), this.mainConfig.getWebsocket().getPort()));
+            this.webSocketServer.start();
+            Bukkit.getLogger().info("Websocket server started on address " + this.mainConfig.getWebsocket().getHost() + ":" + this.mainConfig.getWebsocket().getPort());
+        } else {
+            this.webSocketClient = new WSClient(URI.create("ws://" + this.mainConfig.getWebsocket().getHost() + ":" + this.mainConfig.getWebsocket().getPort()));
+            try {
+                boolean success = webSocketClient.connectBlocking(10, TimeUnit.SECONDS);
+                System.out.println(success);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Bukkit.getLogger().info("Websocket client connected to address " + this.mainConfig.getWebsocket().getHost() + this.mainConfig.getWebsocket().getPort());
+        }
     }
 
     private void registerCommand(BaseCommand command) {

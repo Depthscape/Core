@@ -1,8 +1,12 @@
 package net.depthscape.core.socket;
 
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.event.OfflineUserAsyncChatEvent;
 import net.depthscape.core.event.WebSocketClientRecieveDataEvent;
+import net.depthscape.core.user.OfflineUser;
+import net.depthscape.core.user.UserManager;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
@@ -28,6 +32,21 @@ public class WSClient extends WebSocketClient {
     public void onMessage(String s) {
         DataType type = DataType.valueOf(new JSONObject(s).getString("type"));
         JSONObject data = new JSONObject(s);
+        switch (type) {
+            case CHAT_MESSAGE -> {
+                String server = data.getString("server");
+                UUID uuid = UUID.fromString(data.getString("player"));
+                OfflineUser user = UserManager.getOfflineUserSync(uuid);
+                String message = data.getString("message");
+                OfflineUserAsyncChatEvent event = new OfflineUserAsyncChatEvent(user, message, server);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Bukkit.getPluginManager().callEvent(event);
+                    }
+                }.runTask(CorePlugin.getInstance());
+            }
+        }
         WebSocketClientRecieveDataEvent event = new WebSocketClientRecieveDataEvent(type, data);
         Bukkit.getPluginManager().callEvent(event);
     }

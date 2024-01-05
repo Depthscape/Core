@@ -17,3 +17,4 @@ commands:
       - v
   test:
   noclip:
+  websocketrestart:

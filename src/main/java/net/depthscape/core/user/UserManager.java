@@ -151,6 +151,31 @@ public class UserManager {
         return null;
     }
 
+    public static OfflineUser getOfflineUserSync(long discordId) {
+        User user = onlineUsers.stream().filter(u -> u.getDiscordId() == discordId).findFirst().orElse(null);
+        if (user != null) {
+            return user;
+        }
+
+        OfflineUser offlineUser = offlineUsers.stream().filter(u -> u.getDiscordId() == discordId).findFirst().orElse(null);
+        if (offlineUser != null) {
+            return offlineUser;
+        }
+
+        ResultSet resultSet = DatabaseUtils.executeQuery("SELECT * FROM players WHERE discord_id = '" + discordId + "'");
+
+        try {
+            if (resultSet.next()) {
+                OfflineUser u = new OfflineUser(resultSet);
+                offlineUsers.add(u);
+                return u;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static void createNewUser(UUID uniqueId) {
         new BukkitRunnable() {
             @Override
