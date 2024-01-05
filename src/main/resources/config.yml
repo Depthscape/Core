@@ -7,5 +7,10 @@ Whitelist:
     - 'Admin'
 
 Tablist:
-  Header: '&e&lDepth&6&lScape\n'
-  Footer: '\n&d&lBuy ranks at &e&lstore.depthscape.net'
+  Header: "\\u+4E5E\\u+F801\\u+4EA1\n\n\n\n"
+  Footer: "\n&#3A86FF ʙᴜʏ ʀᴀɴᴋs ᴀᴛ &#FFBE0Bsᴛᴏʀᴇ.ᴅᴇᴘᴛʜsᴄᴀᴘᴇ.ɴᴇᴛ \n"
+
+Web_Socket:
+  Server: true
+  Host: "localhost"
+  Port: 8080
