@@ -151,6 +151,15 @@ public class UserManager {
         return null;
     }
 
+    public static void getOfflineUser(long discordId, Callback<OfflineUser> callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                callback.call(getOfflineUserSync(discordId));
+            }
+        }.runTaskAsynchronously(CorePlugin.getInstance());
+    }
+
     public static OfflineUser getOfflineUserSync(long discordId) {
         User user = onlineUsers.stream().filter(u -> u.getDiscordId() == discordId).findFirst().orElse(null);
         if (user != null) {
