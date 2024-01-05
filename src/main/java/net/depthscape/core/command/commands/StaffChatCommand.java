@@ -1,11 +1,13 @@
-package net.depthscape.core.command;
+package net.depthscape.core.command.commands;
 
+import net.depthscape.core.command.BaseCommand;
+import net.depthscape.core.command.RankBaseCommand;
 import net.depthscape.core.user.User;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class StaffChatCommand extends BaseCommand {
+public class StaffChatCommand extends RankBaseCommand {
     public StaffChatCommand() {
         super("staffchat", "Builder");
     }

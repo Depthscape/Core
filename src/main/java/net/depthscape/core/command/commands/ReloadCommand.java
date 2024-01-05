@@ -6,16 +6,18 @@
  * Copyright © 2023 Leo Baehre. All rights reserved.
  */
 
-package net.depthscape.core.command;
+package net.depthscape.core.command.commands;
 
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.command.BaseCommand;
+import net.depthscape.core.command.RankBaseCommand;
 import net.depthscape.core.rank.RankManager;
 import net.depthscape.core.user.User;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class ReloadCommand extends BaseCommand{
+public class ReloadCommand extends RankBaseCommand {
     public ReloadCommand() {
         super("corereload", "Admin");
     }

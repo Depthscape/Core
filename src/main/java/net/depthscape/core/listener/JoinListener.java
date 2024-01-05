@@ -32,7 +32,6 @@ public class JoinListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.setJoinMessage(null);
         Player player = event.getPlayer();
 
         if (pendingUsers.isEmpty()) {

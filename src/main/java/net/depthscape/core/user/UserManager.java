@@ -16,6 +16,9 @@ import java.util.UUID;
 public class UserManager {
 
     @Getter
+    private static final List<OfflineUser> offlineUsers = new ArrayList<>();
+
+    @Getter
     private static final List<User> onlineUsers = new ArrayList<>();
 
     public static User setOnline(OfflineUser offlineUser, Player player) {
@@ -73,6 +76,7 @@ public class UserManager {
     }
 
     public static void getOfflineUser(UUID uniqueId, Callback<OfflineUser> callback) {
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -82,9 +86,16 @@ public class UserManager {
     }
 
     public static OfflineUser getOfflineUserSync(UUID uniqueId) {
+
         if (onlineUsers.contains(getUser(uniqueId))) {
             return getUser(uniqueId);
         }
+
+        OfflineUser offlineUser = offlineUsers.stream().filter(user -> user.getUniqueId().equals(uniqueId)).findFirst().orElse(null);
+        if (offlineUser != null) {
+            return offlineUser;
+        }
+
         ResultSet resultSet = DatabaseUtils.executeQuery("SELECT * FROM players WHERE uuid = '" + uniqueId.toString() + "'");
 
         if (resultSet == null) {
@@ -95,7 +106,9 @@ public class UserManager {
 
         try {
             if (resultSet.next()) {
-                return new OfflineUser(resultSet);
+                OfflineUser user = new OfflineUser(resultSet);
+                offlineUsers.add(user);
+                return user;
             } else {
                 System.out.println("TEST ResultSet is empty");
             }
@@ -119,11 +132,18 @@ public class UserManager {
             return getUser(name);
         }
 
+        OfflineUser offlineUser = offlineUsers.stream().filter(user -> user.getName().equals(name)).findFirst().orElse(null);
+        if (offlineUser != null) {
+            return offlineUser;
+        }
+
         ResultSet resultSet = DatabaseUtils.executeQuery("SELECT * FROM players WHERE name = '" + name + "'");
 
         try {
             if (resultSet.next()) {
-                return new OfflineUser(resultSet);
+                OfflineUser user = new OfflineUser(resultSet);
+                offlineUsers.add(user);
+                return user;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -167,5 +187,9 @@ public class UserManager {
 
     public static void removeUser(User user) {
         onlineUsers.remove(user);
+    }
+
+    public static List<User> getOnlineUsers() {
+        return onlineUsers.stream().filter(user -> user.getPlayer() != null && user.getPlayer().isOnline()).toList();
     }
 }

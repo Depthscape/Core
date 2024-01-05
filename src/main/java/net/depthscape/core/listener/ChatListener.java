@@ -8,7 +8,10 @@
 
 package net.depthscape.core.listener;
 
-import net.depthscape.core.rank.Rank;
+import net.depthscape.core.CorePlugin;
+import net.depthscape.core.event.OfflineUserAsyncChatEvent;
+import net.depthscape.core.event.WebSocketClientRecieveDataEvent;
+import net.depthscape.core.socket.DataType;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
 import net.depthscape.core.utils.ChatUtils;
@@ -17,6 +20,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.json.JSONObject;
 
 public class ChatListener implements Listener {
 
@@ -52,5 +57,38 @@ public class ChatListener implements Listener {
             );
         }
 
+        if (!CorePlugin.isServer() && CorePlugin.getInstance().getWebSocketClient() != null) {
+            // handle client chat
+            JSONObject data = new JSONObject();
+            data.put("server", CorePlugin.getInstance().getMainConfig().getServerName());
+            data.put("player", user.getUniqueId());
+            data.put("message", message);
+            CorePlugin.getInstance().getWebSocketClient().send(DataType.CHAT_MESSAGE, data);
+        } else {
+            // handle server chat
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    OfflineUserAsyncChatEvent chatEvent = new OfflineUserAsyncChatEvent(user, message, CorePlugin.getInstance().getMainConfig().getServerName());
+                    Bukkit.getPluginManager().callEvent(chatEvent);
+                }
+            }.runTask(CorePlugin.getInstance());
+
+        }
+
+    }
+
+    @EventHandler
+    public void onNetworkChat(OfflineUserAsyncChatEvent event) {
+        OfflineUser user = event.getUser();
+        String message = event.getMessage();
+        String server = event.getServer();
+
+        System.out.println("User " + user.getName() + " sent message " + message + " from server " + server);
+    }
+
+    @EventHandler
+    public void onDataRecieve(WebSocketClientRecieveDataEvent event) {
+        System.out.println("Recieved data " + event.getType() + " " + event.getContent());
     }
 }

@@ -19,28 +19,18 @@ import java.util.List;
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
     private final String label;
-    private final Rank minimumRank;
 
 
-    public BaseCommand(String label, String minimumRank) {
+
+    public BaseCommand(String label) {
         this.label = label;
-        if (minimumRank != null) {
-            this.minimumRank = Rank.getRank(minimumRank);
-            return;
-        }
-        this.minimumRank = null;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
             User user = User.getUser(player);
-            if (minimumRank != null) {
-                if (user.getRank().getWeight() > minimumRank.getWeight()) {
-                    user.sendMessage(getError("The command you seek is lost in the server's pixelated dimension."));
-                    return true;
-                }
-            }
+
             onCommand(player, user, args);
         }
         return true;
@@ -50,11 +40,6 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
             User user = User.getUser(player);
-            if (minimumRank != null) {
-                if (user.getRank().getWeight() > minimumRank.getWeight()) {
-                    return null;
-                }
-            }
             return onTabComplete(player, user, args);
         }
         return null;

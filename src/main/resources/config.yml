@@ -1,3 +1,5 @@
+Server_Name: "DEV01"
+
 Whitelist:
   Enabled: true
   Block_Message: '&c&lYou are not whitelisted on this server!'

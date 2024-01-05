@@ -2,6 +2,10 @@ name: Core
 version: '${project.version}'
 main: net.depthscape.core.CorePlugin
 api-version: '1.20'
+depend:
+  - TAB
+softdepend:
+  - TAB
 commands:
   corereload:
   createworld:
@@ -11,4 +15,5 @@ commands:
   vanish:
     aliases:
       - v
-  dikkelul:
+  test:
+  noclip:

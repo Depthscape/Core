@@ -8,23 +8,30 @@
 
 package net.depthscape.core.user;
 
+import com.google.j2objc.annotations.Property;
+import com.mojang.authlib.GameProfile;
 import lombok.Getter;
 import lombok.Setter;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.ability.Ability;
 import net.depthscape.core.model.Box;
 import net.depthscape.core.model.Notification;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.utils.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 @Getter
@@ -40,6 +47,10 @@ public class User extends OfflineUser {
     private BukkitTask infoPanelRunnable;
 
     private boolean staffChatSendEnabled = false;
+    private boolean noClipEnabled = false;
+    private boolean wasFlyingBeforeNoClip = false;
+
+    private Map<Ability, Boolean> enabledAbilities = new HashMap<>();
 
     public User(UUID uniqueId) {
         super(uniqueId);
@@ -57,9 +68,44 @@ public class User extends OfflineUser {
         UserManager.saveUser(this);
     }
 
+    /*--- Abilities ---*/
+
+    public boolean hasPermissionForAbility(Ability ability) {
+        return enabledAbilities.containsKey(ability);
+    }
+
+    public boolean isAbilityEnabled(Ability ability) {
+        if (enabledAbilities.containsKey(ability)) {
+            return enabledAbilities.get(ability);
+        }
+        return false;
+    }
+
+    public void enableAbility(Ability ability) {
+        if (enabledAbilities.containsKey(ability)) {
+            if (!isAbilityEnabled(ability)) {
+                ability.enable(this);
+                enabledAbilities.put(ability, true);
+            }
+        }
+    }
+
+    public void disableAbility(Ability ability) {
+        if (enabledAbilities.containsKey(ability)) {
+            if (isAbilityEnabled(ability)) {
+                ability.disable(this);
+                enabledAbilities.put(ability, false);
+            }
+        }
+    }
+
+
+
+
+
     /*--- Nametag ---*/
 
-    private void setNametag(String prefix) {
+    public void setNametag(String prefix) {
         TabPlayer tabPlayer = TabAPI.getInstance().getPlayer(getUniqueId());
         if (tabPlayer == null) {
             return;
@@ -95,8 +141,8 @@ public class User extends OfflineUser {
         }.runTaskTimer(CorePlugin.getInstance(), 0, 2);
     }
 
-    public void addInfoPanelBox(String id, Box box, boolean inFront) {
-        if (!inFront) {
+    public void addInfoPanelBox(String id, Box box, boolean left) {
+        if (!left) {
             infoPanel.put(id, box);
             return;
         }
@@ -164,34 +210,7 @@ public class User extends OfflineUser {
 
     public void vanish(boolean silent) {
 
-        if (isVanished()) return;
-        setVanished(true);
 
-        Rank rank = getRank();
-
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            if (target == player) continue;
-            User targetUser = User.getUser(target);
-            Rank targetRank = targetUser.getRank();
-            if (targetRank.getWeight() <= rank.getWeight()) {
-                if (!silent) {
-                    targetUser.sendMessage(ChatUtils.getInfoMessage(player.getName() + " has vanished."));
-                }
-                continue;
-            }
-
-            target.hidePlayer(CorePlugin.getInstance(), player);
-        }
-
-        String prefix = ChatUtils.format(getRank().getVanishPrefix() + " ");
-        setNametag(prefix);
-
-
-        addInfoPanelBox("vanished", new Box(CustomFontCharacter.VANISHED + " Vanished"), true);
-        if (!silent) {
-            sendNotification(CustomFontCharacter.VANISH_ON.toString());
-            sendMessage(ChatUtils.getInfoMessage("You have vanished."));
-        }
     }
 
     public void unvanish(boolean silent) {
@@ -252,9 +271,26 @@ public class User extends OfflineUser {
     public void toggleStaffChat() {
         staffChatSendEnabled = !staffChatSendEnabled;
         if (staffChatSendEnabled) {
-            sendMessage("&aYou are now in staff chat mode. All messages will be sent to staff chat.");
+            sendMessage(ChatUtils.getInfoMessage("You are now in staff chat mode."));
         } else {
-            sendMessage("&aYou are no longer in staff chat mode.");
+            sendMessage(ChatUtils.getInfoMessage("You are no longer in staff chat mode."));
+        }
+    }
+
+    /*--- NoClip ---*/
+    public void toggleNoClip() {
+        noClipEnabled = !noClipEnabled;
+        if (noClipEnabled) {
+            if (player.isFlying()) {
+                wasFlyingBeforeNoClip = true;
+            }
+            sendMessage(ChatUtils.getInfoMessage("You are now in noclip mode."));
+        } else {
+            if (wasFlyingBeforeNoClip) {
+                player.setFlying(true);
+                wasFlyingBeforeNoClip = false;
+            }
+            sendMessage(ChatUtils.getInfoMessage("You are no longer in noclip mode."));
         }
     }
 

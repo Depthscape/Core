@@ -1,19 +1,22 @@
 package net.depthscape.core.command;
 
+import net.depthscape.core.ability.Ability;
 import net.depthscape.core.user.User;
-import net.depthscape.core.utils.ChatUtils;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class VanishCommand extends BaseCommand{
-    public VanishCommand( ) {
-        super("vanish", "Helper");
+public class AbilityCommand extends BaseCommand {
+
+    private final Ability ability;
+
+    public AbilityCommand(String label, Ability ability) {
+        super(label);
+        this.ability = ability;
     }
 
     @Override
     protected void onCommand(Player player, User user, String[] args) {
-        user.toggleVanish();
     }
 
     @Override

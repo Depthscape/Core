@@ -11,6 +11,7 @@ package net.depthscape.core.config;
 import lombok.Getter;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.config.model.Tablist;
+import net.depthscape.core.config.model.Websocket;
 import net.depthscape.core.config.model.Whitelist;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -23,8 +24,10 @@ public class MainConfig {
 
     private final YamlConfiguration config;
 
+    private String serverName;
     private Whitelist whitelist;
     private Tablist tablist;
+    private Websocket websocket;
 
 
     public MainConfig(CorePlugin plugin) {
@@ -38,6 +41,7 @@ public class MainConfig {
     }
 
     public void load() {
+        this.serverName = config.getString("Server_Name");
 
         this.whitelist = new Whitelist(
                 config.getBoolean("Whitelist.Enabled"),
@@ -48,6 +52,12 @@ public class MainConfig {
         this.tablist = new Tablist(
                 config.getString("Tablist.Header"),
                 config.getString("Tablist.Footer")
+        );
+
+        this.websocket = new Websocket(
+                config.getBoolean("Web_Socket.Server"),
+                config.getString("Web_Socket.Host"),
+                config.getInt("Web_Socket.Port")
         );
     }
 }
