@@ -11,6 +11,8 @@ package net.depthscape.core.listener;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.event.OfflineUserAsyncChatEvent;
 import net.depthscape.core.event.WebSocketClientRecieveDataEvent;
+import net.depthscape.core.punishment.Punishment;
+import net.depthscape.core.punishment.PunishmentManager;
 import net.depthscape.core.socket.DataType;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
@@ -33,6 +35,13 @@ public class ChatListener implements Listener {
         String prefix = user.getRank().getChatPrefix();
         String name = user.getName();
         String message = event.getMessage();
+
+        // check muted
+        Punishment punishment = PunishmentManager.isMuted(user);
+        if (punishment != null) {
+            user.sendMessage(ChatUtils.getMuteMessageFormat(punishment));
+            return;
+        }
 
         if (user.isStaffChatSendEnabled()) {
             for (Player player : Bukkit.getOnlinePlayers()) {

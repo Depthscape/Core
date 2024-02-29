@@ -8,30 +8,24 @@
 
 package net.depthscape.core.user;
 
-import com.google.j2objc.annotations.Property;
-import com.mojang.authlib.GameProfile;
 import lombok.Getter;
 import lombok.Setter;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import net.depthscape.core.CorePlugin;
-import net.depthscape.core.ability.Ability;
+import net.depthscape.core.menu.Menu;
 import net.depthscape.core.model.Box;
 import net.depthscape.core.model.Notification;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 @Getter
@@ -50,58 +44,27 @@ public class User extends OfflineUser {
     private boolean noClipEnabled = false;
     private boolean wasFlyingBeforeNoClip = false;
 
-    private Map<Ability, Boolean> enabledAbilities = new HashMap<>();
+    private Menu openMenu;
 
     public User(UUID uniqueId) {
         super(uniqueId);
     }
 
     public User(OfflineUser user) {
-        super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished(), user.getDiscordId());
+        super(user.getUniqueId(), user.getName(), user.getRank(), user.getCoins(), user.isVanished(), user.getDiscordId(), user.getLastIp(), user.isMuted());
     }
 
     public static User getUser(Player player) {
         return UserManager.getUser(player.getUniqueId());
     }
 
-    public void save() {
-        UserManager.saveUser(this);
+    public static User getUser(String name) {
+        return UserManager.getUser(name);
     }
 
-    /*--- Abilities ---*/
-
-    public boolean hasPermissionForAbility(Ability ability) {
-        return enabledAbilities.containsKey(ability);
+    public void save(boolean async) {
+        UserManager.saveUser(this, async);
     }
-
-    public boolean isAbilityEnabled(Ability ability) {
-        if (enabledAbilities.containsKey(ability)) {
-            return enabledAbilities.get(ability);
-        }
-        return false;
-    }
-
-    public void enableAbility(Ability ability) {
-        if (enabledAbilities.containsKey(ability)) {
-            if (!isAbilityEnabled(ability)) {
-                ability.enable(this);
-                enabledAbilities.put(ability, true);
-            }
-        }
-    }
-
-    public void disableAbility(Ability ability) {
-        if (enabledAbilities.containsKey(ability)) {
-            if (isAbilityEnabled(ability)) {
-                ability.disable(this);
-                enabledAbilities.put(ability, false);
-            }
-        }
-    }
-
-
-
-
 
     /*--- Nametag ---*/
 
@@ -198,7 +161,7 @@ public class User extends OfflineUser {
                 stringBuilder.append(customFontCharacter.getCharacter()).append(UnicodeSpace.MINUS_1);
 
             }
-            stringBuilder.append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.findBestCombination(x)).append(text);
+            stringBuilder.append(BossBarCharacter.BOSSBAR_END).append(UnicodeSpace.find(x)).append(text);
 
             boxBuilder.append(ChatUtils.format(stringBuilder.toString()));
         }
@@ -296,5 +259,13 @@ public class User extends OfflineUser {
 
     public void sendMessage(String message) {
         this.player.sendMessage(ChatUtils.format(message));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return getUniqueId().equals(user.getUniqueId());
     }
 }

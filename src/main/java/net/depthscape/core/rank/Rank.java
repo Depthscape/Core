@@ -28,8 +28,9 @@ public class Rank {
     private List<String> permissions;
     private Rank inheritance = null;
     private boolean isStaff;
+    private String profilePrefix;
 
-    public Rank(final String name, String chatPrefix, String tabPrefix, String vanishPrefix, final int weight, boolean isStaff, long discordRoleId) {
+    public Rank(final String name, String chatPrefix, String tabPrefix, String vanishPrefix, final int weight, boolean isStaff, long discordRoleId, String profilePrefix) {
         this.name = ChatUtils.format(name);
         this.chatPrefix = ChatUtils.format(chatPrefix);
         this.tabPrefix = ChatUtils.format(tabPrefix);
@@ -38,6 +39,7 @@ public class Rank {
         this.permissions = new ArrayList<>();
         this.isStaff = isStaff;
         this.discordRoleId = discordRoleId;
+        this.profilePrefix = ChatUtils.format(profilePrefix);
     }
 
     public void addPermission(String permission) {

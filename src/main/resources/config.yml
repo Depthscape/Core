@@ -1,16 +1,38 @@
-Server_Name: "DEV01"
 
+# Server enabled commands
+Enabled_Commands:
+  noclip: true
+  vanish: true
+  fly: true
+  nightvision: true
+
+# Whitelist based on player ranks.
 Whitelist:
   Enabled: true
   Block_Message: '&c&lYou are not whitelisted on this server!'
   Whitelisted_Ranks:
     - 'Admin'
 
-Tablist:
-  Header: "\\u+4E5E\\u+F801\\u+4EA1\n\n\n\n"
-  Footer: "\n&#3A86FF ʙᴜʏ ʀᴀɴᴋs ᴀᴛ &#FFBE0Bsᴛᴏʀᴇ.ᴅᴇᴘᴛʜsᴄᴀᴘᴇ.ɴᴇᴛ \n"
-
-Web_Socket:
-  Server: true
+# Use websockets to communicate with other servers.
+# Protocols can be found in the README file.
+Network_Channel:
+  Websocket_Server: true
+  Server_ID: "DEV01"
   Host: "localhost"
   Port: 8080
+
+# Auto restart at a specific time.
+# Create backups of the whole server before auto restart.
+# Servers hold 7 daily backups at a time, then 10 weekly.
+Auto_Restart:
+  Enabled: true
+  Time: "00:00:00"
+  Popups: true
+  Backups:
+    Enabled: true
+    Daily: 7
+    Weekly: 10
+
+# Whether to broadcast a message when a player joins/leaves the server.
+Join_Message_Enabled: true
+Leave_Message_Enabled: true

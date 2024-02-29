@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemCreator {
@@ -35,8 +36,9 @@ public class ItemCreator {
     }
 
     public ItemCreator setLore(List<String> lore) {
-        lore.replaceAll(ChatUtils::format);
-        this.meta.setLore(lore);
+        List<String> formattedLore = new ArrayList<>();
+        lore.forEach(line -> formattedLore.add(ChatUtils.format("&7" + line)));
+        this.meta.setLore(formattedLore);
         return this;
     }
 

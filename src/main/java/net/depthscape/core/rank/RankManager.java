@@ -40,11 +40,12 @@ public class RankManager {
                             resultSet.getString("vanish_prefix"),
                             resultSet.getInt("weight"),
                             resultSet.getBoolean("staff"),
-                            resultSet.getLong("discord_id")
+                            resultSet.getLong("discord_id"),
+                            resultSet.getString("profile_unicode")
                     );
                     ranks.add(rank);
                     Bukkit.getLogger().info("Loaded rank: " + rank.getName());
-                    Bukkit.getLogger().info("V Prefix: " + rank.getVanishPrefix());
+                    Bukkit.getLogger().info("Profile Prefix: " + rank.getProfilePrefix());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }

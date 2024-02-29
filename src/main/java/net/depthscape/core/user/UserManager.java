@@ -30,10 +30,10 @@ public class UserManager {
 
         user.setPlayer(player);
         user.setName(player.getName());
+        user.setLastIp(player.getAddress().getAddress().getHostAddress());
+        saveUser(user, true);
 
-        saveUser(user);
         System.out.println("TEST - User " + player.getName() + " updated");
-
         user.setInfoPanel();
 
 
@@ -195,32 +195,68 @@ public class UserManager {
     }
 
     public static void createNewUserSync(UUID uniqueId) {
-        DatabaseUtils.executeUpdateSync(
+        DatabaseUtils.executeUpdate(
                 "INSERT INTO players"
                         + " (uuid, name, rank, coins, vanished) VALUES"
                         + " ('" + uniqueId + "', NULL, '" + RankManager.getDefaultRank().getName() + "', 0, 0)");
     }
 
-    public static void saveUser(User user) {
-        new BukkitRunnable() {
+    public static void saveUser(User user, boolean async) {
+        BukkitRunnable br = new BukkitRunnable() {
             @Override
             public void run() {
                 saveUserSync(user);
             }
-        }.runTaskAsynchronously(CorePlugin.getInstance());
+        };
+
+        if (async) {
+            br.runTaskAsynchronously(CorePlugin.getInstance());
+        } else {
+            br.run();
+        }
     }
 
     public static void saveUserSync(User user) {
-        DatabaseUtils.executeUpdateSync(
+        DatabaseUtils.executeUpdate(
                 "UPDATE players SET"
                         + " name = '" + user.getName() + "',"
                         + " vanished = " + (user.isVanished() ? 1 : 0) + ","
-                        + " discord_id = '" + user.getDiscordId() + "'"
+                        + " discord_id = '" + user.getDiscordId() + "',"
+                        + " last_ip = '" + user.getLastIp() + "'"
                         + " WHERE uuid = '" + user.getUniqueId() + "'");
+    }
+
+    public static void update(OfflineUser offlineUser) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                updateSync(offlineUser);
+            }
+        }.runTaskAsynchronously(CorePlugin.getInstance());
+    }
+
+    public static void updateSync(OfflineUser offlineUser) {
+        DatabaseUtils.executeQueryAsync("SELECT * FROM players WHERE uuid = '" + offlineUser.getUniqueId() + "'", resultSet -> {
+            try {
+                if (resultSet.next()) {
+                    offlineUser.setName(resultSet.getString("name"));
+                    offlineUser.setRank(RankManager.getRank(resultSet.getString("rank")));
+                    offlineUser.setCoins(resultSet.getInt("coins"));
+                    offlineUser.setVanished(resultSet.getBoolean("vanished"));
+                    offlineUser.setDiscordId(resultSet.getLong("discord_id"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public static void removeUser(User user) {
         onlineUsers.remove(user);
+    }
+
+    public static void removeOfflineUser(OfflineUser user) {
+        offlineUsers.remove(user);
     }
 
     public static List<User> getOnlineUsers() {

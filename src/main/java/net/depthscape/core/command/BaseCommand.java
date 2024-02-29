@@ -7,6 +7,7 @@
  */
 package net.depthscape.core.command;
 
+import lombok.Getter;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.user.User;
 import net.depthscape.core.utils.ChatUtils;
@@ -16,11 +17,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
+@Getter
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
     private final String label;
-
-
 
     public BaseCommand(String label) {
         this.label = label;

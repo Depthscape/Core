@@ -13,10 +13,12 @@ import lombok.Getter;
 import lombok.Setter;
 import net.depthscape.core.exception.PlayerNullException;
 import net.depthscape.core.model.Callback;
+import net.depthscape.core.punishment.PunishmentManager;
 import net.depthscape.core.rank.Rank;
 import net.depthscape.core.rank.RankManager;
 import net.depthscape.core.utils.DatabaseUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -34,6 +36,9 @@ public class OfflineUser {
     private int coins;
     private boolean vanished;
     private long discordId;
+    private String lastIp;
+
+    private boolean isMuted;
 
     public OfflineUser(ResultSet data) {
 
@@ -44,10 +49,10 @@ public class OfflineUser {
             coins = data.getInt("coins");
             vanished = data.getBoolean("vanished");
             discordId = data.getLong("discord_id");
+            lastIp = data.getString("last_ip");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public OfflineUser(UUID uuid) {
@@ -62,6 +67,22 @@ public class OfflineUser {
         this.coins = 0;
         this.vanished = false;
         this.discordId = 0;
+        this.lastIp = player.getAddress().getAddress().getHostAddress();
     }
 
+    public static void getOfflineUser(String name, Callback<OfflineUser> callback) {
+        UserManager.getOfflineUser(name, callback);
+    }
+
+    public static void getOfflineUser(UUID uuid, Callback<OfflineUser> callback) {
+        UserManager.getOfflineUser(uuid, callback);
+    }
+
+    public static void getOfflineUser(OfflinePlayer player, Callback<OfflineUser> callback) {
+        UserManager.getOfflineUser(player.getUniqueId(), callback);
+    }
+
+    public User getUser() {
+        return UserManager.getUser(uniqueId);
+    }
 }

@@ -12,6 +12,9 @@ import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import net.depthscape.core.CorePlugin;
 import net.depthscape.core.model.Box;
+import net.depthscape.core.punishment.Punishment;
+import net.depthscape.core.punishment.PunishmentManager;
+import net.depthscape.core.punishment.PunishmentType;
 import net.depthscape.core.user.OfflineUser;
 import net.depthscape.core.user.User;
 import net.depthscape.core.user.UserManager;
@@ -22,6 +25,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -64,13 +68,38 @@ public class JoinListener implements Listener {
 
         user.addInfoPanelBox("time", CorePlugin.getInstance().getUpdateTimeBoxTask().getBox(), false);
 
-        //user.setCoolBar("Test");
+        // notify network that user has joined
+        if (CorePlugin.isServer()) {
+
+        }
     }
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
 
+        if (!CorePlugin.isJoiningAllowed()) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatUtils.format("&cThe server is not available to join. Please try again later."));
+            return;
+        }
+
         UUID uuid = event.getUniqueId();
+
+        // check if user is banned
+        // first check ip then uuid
+        String ip = event.getAddress().getHostAddress();
+
+        Punishment ipp = PunishmentManager.isBannedByIP(ip);
+        if (ipp != null) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatUtils.format(ChatUtils.getBanMessageFormat(ipp)));
+            return;
+        }
+
+        Punishment uuidp = PunishmentManager.isBannedByUUID(uuid);
+        if (uuidp != null) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ChatUtils.format(ChatUtils.getBanMessageFormat(uuidp)));
+            return;
+        }
+
         OfflineUser user = UserManager.getOfflineUserSync(uuid);
 
         if (user == null) {
@@ -84,18 +113,21 @@ public class JoinListener implements Listener {
             }
         }
 
-        checkWhitelist(user, event);
-
+        boolean whitelisted = checkWhitelist(user, event);
+        if (!whitelisted) {
+            UserManager.removeOfflineUser(user);
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format("&cYou are not whitelisted on this server."));
+            return;
+        }
         pendingUsers.add(user);
     }
 
-    private void checkWhitelist(OfflineUser user, AsyncPlayerPreLoginEvent event) {
+    private boolean checkWhitelist(OfflineUser user, AsyncPlayerPreLoginEvent event) {
         List<String> whitelistedRanks = CorePlugin.getInstance().getMainConfig().getWhitelist().getWhitelistedRanks();
         if (CorePlugin.getInstance().getMainConfig().getWhitelist().isEnabled() && !whitelistedRanks.isEmpty()) {
-            if (!whitelistedRanks.contains(user.getRank().getName())) {
-                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, ChatUtils.format(CorePlugin.getInstance().getMainConfig().getWhitelist().getMessage()));
-            }
+            return whitelistedRanks.contains(user.getRank().getName());
         }
+        return true;
     }
 
     private void errorKick(Player player) {

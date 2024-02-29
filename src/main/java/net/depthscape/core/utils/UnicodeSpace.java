@@ -46,7 +46,10 @@ public enum UnicodeSpace {
         this.spaces = spaces;
     }
 
-    public static String  findBestCombination(int target) {
+    public static String find(int target) {
+        if (target == 0) {
+            return "";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         List<UnicodeSpace> values;
         boolean negative = target < 0;

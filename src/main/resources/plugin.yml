@@ -4,17 +4,25 @@ main: net.depthscape.core.CorePlugin
 api-version: '1.20'
 depend:
   - TAB
+  - ProtocolLib
 softdepend:
   - TAB
 commands:
   corereload:
   createworld:
   staffchat:
-    aliases:
-      - sc
+    aliases: [sc]
   vanish:
-    aliases:
-      - v
+    aliases: [v]
   test:
   noclip:
   websocketrestart:
+  dailyrestart:
+  profile:
+  punish:
+  gmc:
+  gms:
+  gma:
+  gmsp:
+  gamemode:
+    aliases: [gm]

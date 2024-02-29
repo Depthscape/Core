@@ -28,6 +28,7 @@ public enum CustomFontCharacter {
     WARNING_ICON('\u5343', 5),       // Character: 千
     INFO_ICON('\u4E2A', 5),          // Character: 个
     AFK_ICON('\u4E0E', 5),           // Character: 与
+    DISCORD_ICON('\u52FA' , 5),      // Character: 勺
     HELPER_VANISH('\u4E08', 5),      // Character: 丈
     MODERATOR_VANISH('\u5927', 5),   // Character: 大
     ADMIN_VANISH('\u5DE5', 5),       // Character: 工

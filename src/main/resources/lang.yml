@@ -1,0 +1,41 @@
+
+# Language File of the Core Plugin
+# There are also placeholders available:
+# %player% - The player's name
+# %prefix% - The player's prefix
+# %rank% - The player's rank
+
+
+Chat:
+  Player_Chat: "%prefix% %player% &f: %message%"
+  Staff_Chat: "&#3A86FF[SC] %prefix% %player% &#A5A5A5: %message%"
+  Discord_Chat: "&f\\u+52FA%prefix% %player% &f: %message%"
+
+Join_Message: "&7[&a+&7] &a%player% &7joined the server!"
+Leave_Message: "&7[&c-&7] &c%player% &7left the server!"
+
+Tablist:
+  Header: "\\u+4E5E\\u+F801\\u+4EA1\n\n\n\n"
+  Footer: "\n&#3A86FF ʙᴜʏ ʀᴀɴᴋs ᴀᴛ &#FFBE0Bsᴛᴏʀᴇ.ᴅᴇᴘᴛʜsᴄᴀᴘᴇ.ɴᴇᴛ \n"
+
+Whitelist:
+  Kick_Message: '&c&lYou are not whitelisted on this server!'
+  Whitelist_Enabled: '&aWhitelist is enabled! Whitelisted ranks: %ranks%'
+  Whitelist_Disabled: '&cWhitelist is disabled!'
+
+HUD:
+  Bar:
+    Nightvision: ""
+    Noclip: ""
+    Vanish: ""
+    Clock: "%time%"
+
+Auto_Restart:
+  600: "10 minutes until daily restart!"
+  300: "5 minutes until daily restart!"
+  60: "1 minute until daily restart!"
+  10: "10 seconds until daily restart!"
+  3: "3 seconds until daily restart!"
+  2: "2 seconds until daily restart!"
+  1: "1 second until daily restart!"
+  0: "Restarting server!"

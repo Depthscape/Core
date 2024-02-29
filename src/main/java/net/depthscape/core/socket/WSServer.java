@@ -14,12 +14,17 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class WSServer extends WebSocketServer {
 
+    List<String> connectedServers;
+
     public WSServer(InetSocketAddress address) {
         super(address);
+        this.connectedServers = new ArrayList<>();
     }
 
     @Override
@@ -29,7 +34,6 @@ public class WSServer extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-
     }
 
     @Override
@@ -41,7 +45,10 @@ public class WSServer extends WebSocketServer {
         switch (type) {
             case HANDSHAKE -> {
                 // handle handshake
-                Bukkit.getLogger().info("Handshake from " + webSocket.getRemoteSocketAddress() + " with server address " + content.getString("address"));
+                String serverName = content.getString("server_name");
+                String address = content.getString("address");
+                this.connectedServers.add(serverName);
+                Bukkit.getLogger().info("Handshake from " + address + " with server name " + serverName);
                 Bukkit.getLogger().info("Status: " + (webSocket.getReadyState() == ReadyState.OPEN ? "OK" : "ERROR"));
             }
             case CHAT_MESSAGE -> {
@@ -80,9 +87,15 @@ public class WSServer extends WebSocketServer {
     public void handleChatMessage(OfflineUser user, String message, String server) {
         JSONObject data = new JSONObject();
         data.put("server", server);
-        data.put("player", user.getUniqueId());
+        data.put("prefix", user.getRank().getChatPrefix());
+        data.put("player", user.getName());
         data.put("message", message);
         broadcast(DataType.CHAT_MESSAGE, data);
+        System.out.println("Data to send: " + data);
         ChatUtils.sendDiscordMessage(data);
+    }
+
+    public void broadcastRestart() {
+        broadcast(DataType.RESTART, new JSONObject());
     }
 }

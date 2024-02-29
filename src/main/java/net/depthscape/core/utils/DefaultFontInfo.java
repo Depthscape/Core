@@ -101,6 +101,32 @@ public enum DefaultFontInfo {
 	PERIOD('.', 2),
 	COMMA(',', 2),
 	SPACE(' ', 6),
+	OTHER_A('ᴀ', 4),
+	OTHER_B('ʙ', 4),
+	OTHER_C('ᴄ', 4),
+	OTHER_D('ᴅ', 4),
+	OTHER_E('ᴇ', 4),
+	OTHER_F('ꜰ', 4),
+	OTHER_G('ɢ', 4),
+	OTHER_H('ʜ', 4),
+	OTHER_I('ɪ', 2),
+	OTHER_J('ᴊ', 4),
+	OTHER_K('ᴋ', 4),
+	OTHER_L('ʟ', 4),
+	OTHER_M('ᴍ', 4),
+	OTHER_N('ɴ', 4),
+	OTHER_O('ᴏ', 4),
+	OTHER_P('ᴘ', 4),
+	OTHER_Q('ǫ', 4),
+	OTHER_R('ʀ', 4),
+	OTHER_S('ꜱ', 4),
+	OTHER_T('ᴛ', 4),
+	OTHER_U('ᴜ', 4),
+	OTHER_V('ᴠ', 4),
+	OTHER_W('ᴡ', 4),
+	OTHER_X('x', 4),
+	OTHER_Y('ʏ', 4),
+	OTHER_Z('ᴢ', 4),
 	DEFAULT('a', 6);
 
 
@@ -150,5 +176,20 @@ public enum DefaultFontInfo {
 
 		}
 		return length;
+	}
+
+	public String translateStringToUnicode(String string) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (char c : string.toLowerCase().toCharArray()) {
+			for (DefaultFontInfo dfi : DefaultFontInfo.values()) {
+				if (!dfi.name().startsWith("OTHER_")) continue;
+				String character = dfi.name().substring(6).toLowerCase();
+				if (c == character.charAt(0)) {
+					stringBuilder.append(dfi.getCharacter());
+					break;
+				}
+			}
+		}
+		return stringBuilder.toString();
 	}
 }

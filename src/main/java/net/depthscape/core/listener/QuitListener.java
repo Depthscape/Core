@@ -18,7 +18,7 @@ public class QuitListener implements Listener {
         user.getInfoPanel().clear();
         user.getInfoPanelRunnable().cancel();
 
-        user.save();
+        user.save(true);
         UserManager.removeUser(user);
 
     }

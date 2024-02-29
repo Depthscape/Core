@@ -21,9 +21,9 @@ public class ColorUtils {
 	private static Method COLOR_FROM_CHAT_COLOR;
 	private static Method CHAT_COLOR_FROM_COLOR;
 	private static final boolean hexSupport;
-	private static final Pattern gradient = Pattern.compile("<(#[A-Za-z0-9]{6})>(.*?)</(#[A-Za-z0-9]{6})>");;
-	private static final Pattern legacyGradient = Pattern.compile("<(&[A-Za-z0-9])>(.*?)</(&[A-Za-z0-9])>");;
-	private static final Pattern rgb = Pattern.compile("&(#......)");;
+	private static final Pattern gradient = Pattern.compile("<(#[A-Za-z0-9]{6})>(.*?)</(#[A-Za-z0-9]{6})>"); // <#123ABC>Hello World</#456DEF>
+	private static final Pattern legacyGradient = Pattern.compile("<(&[A-Za-z0-9])>(.*?)</(&[A-Za-z0-9])>");
+	private static final Pattern rgb = Pattern.compile("&(#......)");
 	
 	static {
 		try {

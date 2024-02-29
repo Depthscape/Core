@@ -10,13 +10,17 @@ package net.depthscape.core.utils;
 
 import lombok.Getter;
 import net.depthscape.core.CorePlugin;
+import net.depthscape.core.model.Callback;
 import net.depthscape.core.model.SQLCallback;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseUtils {
 
@@ -68,8 +72,8 @@ public class DatabaseUtils {
 
     public static ResultSet executeQuery(String query) {
         if (!isConnected()) {
-            Bukkit.getLogger().info("You are not connected to the database!");
-            return null;
+            Bukkit.getLogger().info("You are not connected to the database! reconnecting...");
+            connect(false);
         }
 
         try {
@@ -91,10 +95,10 @@ public class DatabaseUtils {
 
     }
 
-    public static void executeUpdateSync(String query) {
+    public static void executeUpdate(String query) {
         if (!isConnected()) {
-            Bukkit.getLogger().info("You are not connected to the database!");
-            return;
+            Bukkit.getLogger().info("You are not connected to the database! reconnecting...");
+            connect(false);
         }
 
         try {
@@ -107,7 +111,7 @@ public class DatabaseUtils {
 
     public static void executeUpdateAsync(String query) {
         Bukkit.getScheduler().runTaskAsynchronously(CorePlugin.getInstance(), () -> {
-            executeUpdateSync(query);
+            executeUpdate(query);
         });
     }
 
