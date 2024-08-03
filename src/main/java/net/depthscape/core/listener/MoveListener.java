@@ -34,7 +34,7 @@ public class MoveListener implements Listener {
             Vector toPlayer = location.toVector().subtract(player.getLocation().toVector());
             double dot = direction.dot(toPlayer.normalize());
 
-            if (dot > 0.3) {
+            if (dot > 0.01 && getDistance(player.getLocation(), location) < 2) {
                 if (!CACHED_PLAYERS.contains(player.getUniqueId())) {
                     CACHED_PLAYERS.add(player.getUniqueId());
                 }
@@ -46,7 +46,12 @@ public class MoveListener implements Listener {
                     CACHED_PLAYERS.remove(player.getUniqueId());
                 }
             }
+            break;
         }
 
+    }
+
+    private double getDistance(Location loc1, Location loc2) {
+        return Math.sqrt(Math.pow(loc1.getX() - loc2.getX(), 2) + Math.pow(loc1.getY() - loc2.getY(), 2) + Math.pow(loc1.getZ() - loc2.getZ(), 2));
     }
 }

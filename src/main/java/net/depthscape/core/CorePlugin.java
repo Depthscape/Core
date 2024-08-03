@@ -98,7 +98,7 @@ public final class CorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
-        getServer().getPluginManager().registerEvents(new MoveListener(), this);
+        //getServer().getPluginManager().registerEvents(new MoveListener(), this);
         //getServer().getPluginManager().registerEvents(new PingListener(), this);
 
         registerTabEvents();
